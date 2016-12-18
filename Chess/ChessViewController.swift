@@ -28,15 +28,25 @@ class ChessViewController: UIViewController {
         boardView.createPieces()
     }
     
-    
+    var playerTurn = WHITE
+    var lastTouchLocation = CGPoint.zero
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
     {
         let touchPoint = gestureRecognizer.location(in: self.boardView)
         let gridLocation = boardView.tapAtLocation(tap: touchPoint)
-//        let p = boardModel.getPieceAtLocation(location: gridLocation)
-        let moves = boardModel.getValidMovesAtLocation(location: gridLocation)
-        self.boardView.shadeCheckers(shadeChecker: moves)
+        //check if gridLocation is highlighted
+        if boardView.locationIsHighlighted(location: gridLocation) {
+            self.boardModel.movePiece(from: lastTouchLocation, to: gridLocation)
+            self.boardView.movePiece(from: lastTouchLocation, to: gridLocation)
+            self.boardView.shadeCheckers(shadeChecker: [])
+
+        } else {
+            lastTouchLocation = gridLocation
+            let moves = boardModel.getValidMovesAtLocation(location: gridLocation, forPlayer: playerTurn)
+            self.boardView.shadeCheckers(shadeChecker: moves)
+        }
+        
     }
     
     private func createBoard()

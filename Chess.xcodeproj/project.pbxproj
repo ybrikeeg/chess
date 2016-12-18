@@ -17,6 +17,7 @@
 		42417E3E1E066729004DD251 /* ChessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E3D1E066729004DD251 /* ChessViewController.swift */; };
 		42417E431E067BF7004DD251 /* BoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E421E067BF7004DD251 /* BoardModel.swift */; };
 		42417E451E068AA3004DD251 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E441E068AA3004DD251 /* TileView.swift */; };
+		42417E471E0743A6004DD251 /* PieceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E461E0743A6004DD251 /* PieceModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		42417E3D1E066729004DD251 /* ChessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChessViewController.swift; sourceTree = "<group>"; };
 		42417E421E067BF7004DD251 /* BoardModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardModel.swift; sourceTree = "<group>"; };
 		42417E441E068AA3004DD251 /* TileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
+		42417E461E0743A6004DD251 /* PieceModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PieceModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,6 +109,7 @@
 			isa = PBXGroup;
 			children = (
 				42417E421E067BF7004DD251 /* BoardModel.swift */,
+				42417E461E0743A6004DD251 /* PieceModel.swift */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -185,6 +188,7 @@
 			files = (
 				42417E431E067BF7004DD251 /* BoardModel.swift in Sources */,
 				42417E451E068AA3004DD251 /* TileView.swift in Sources */,
+				42417E471E0743A6004DD251 /* PieceModel.swift in Sources */,
 				42417E3C1E066572004DD251 /* PieceView.swift in Sources */,
 				42417E351E065AAF004DD251 /* BoardView.swift in Sources */,
 				42417E211E0659D7004DD251 /* AppDelegate.swift in Sources */,
