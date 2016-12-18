@@ -9,3 +9,5 @@
 import Foundation
 
 let BOARD_DIMENSIONS = 8
+
+let PIECE_ORDER = ["Rook", "Knight", "Bishop", "Queen", "King", "Bishop", "Knight", "Rook"]

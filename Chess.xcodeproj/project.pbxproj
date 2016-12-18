@@ -11,9 +11,10 @@
 		42417E261E0659D7004DD251 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 42417E241E0659D7004DD251 /* Main.storyboard */; };
 		42417E281E0659D7004DD251 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 42417E271E0659D7004DD251 /* Assets.xcassets */; };
 		42417E2B1E0659D7004DD251 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 42417E291E0659D7004DD251 /* LaunchScreen.storyboard */; };
-		42417E331E065A70004DD251 /* ChessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E321E065A70004DD251 /* ChessViewController.swift */; };
 		42417E351E065AAF004DD251 /* BoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E341E065AAF004DD251 /* BoardView.swift */; };
 		42417E3A1E065E1A004DD251 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E391E065E1A004DD251 /* Constants.swift */; };
+		42417E3C1E066572004DD251 /* PieceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E3B1E066572004DD251 /* PieceView.swift */; };
+		42417E3E1E066729004DD251 /* ChessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E3D1E066729004DD251 /* ChessViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,9 +24,10 @@
 		42417E271E0659D7004DD251 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		42417E2A1E0659D7004DD251 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		42417E2C1E0659D7004DD251 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		42417E321E065A70004DD251 /* ChessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChessViewController.swift; sourceTree = SOURCE_ROOT; };
 		42417E341E065AAF004DD251 /* BoardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardView.swift; sourceTree = "<group>"; };
 		42417E391E065E1A004DD251 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		42417E3B1E066572004DD251 /* PieceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PieceView.swift; sourceTree = "<group>"; };
+		42417E3D1E066729004DD251 /* ChessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChessViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				42417E341E065AAF004DD251 /* BoardView.swift */,
+				42417E3B1E066572004DD251 /* PieceView.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -80,7 +83,7 @@
 		42417E371E065ABD004DD251 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				42417E321E065A70004DD251 /* ChessViewController.swift */,
+				42417E3D1E066729004DD251 /* ChessViewController.swift */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -166,10 +169,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42417E3C1E066572004DD251 /* PieceView.swift in Sources */,
 				42417E351E065AAF004DD251 /* BoardView.swift in Sources */,
 				42417E211E0659D7004DD251 /* AppDelegate.swift in Sources */,
-				42417E331E065A70004DD251 /* ChessViewController.swift in Sources */,
 				42417E3A1E065E1A004DD251 /* Constants.swift in Sources */,
+				42417E3E1E066729004DD251 /* ChessViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
