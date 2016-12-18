@@ -22,13 +22,13 @@ class BoardModel: NSObject {
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
                     arr.append((type: color + PIECE_ORDER[c], position: CGPoint(x:c, y:r)))
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-                    if color == "White" {
+//                    if color == "White" {
                         arr.append((type: color + "Pawn", position: CGPoint(x:c, y:r)))
-
-                    }else {
-                        arr.append((type: "Empty", position: CGPoint(x:c, y:r)))
-
-                    }
+//
+//                    }else {
+//                        arr.append((type: "Empty", position: CGPoint(x:c, y:r)))
+//
+//                    }
 
                 } else {
                     arr.append((type: "Empty", position: CGPoint(x:c, y:r)))
@@ -62,12 +62,17 @@ class BoardModel: NSObject {
                 
                 for i in 0..<4 {
                     let possiblePiece = possibilities[i]
+                    if possiblePiece.type == "Not Found" {
+                        continue
+                    }
                     let possiblePieceColor = (possiblePiece.type.contains("Black")) ? "Black" : "White"
 
                     if path[i] {
                         if possiblePiece.type == "Empty"{
+                            print("1")
                             moves.append(possiblePiece.position)
                         } else if (color != possiblePieceColor){
+                            print("2 \(possiblePieceColor) \(possiblePiece.type)")
                             moves.append(possiblePiece.position)
                             path[i] = false
                         } else {
