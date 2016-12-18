@@ -22,14 +22,7 @@ class BoardModel: NSObject {
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
                     arr.append((type: color + PIECE_ORDER[c], position: CGPoint(x:c, y:r)))
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-//                    if color == "White" {
-                        arr.append((type: color + "Pawn", position: CGPoint(x:c, y:r)))
-//
-//                    }else {
-//                        arr.append((type: "Empty", position: CGPoint(x:c, y:r)))
-//
-//                    }
-
+                    arr.append((type: color + "Pawn", position: CGPoint(x:c, y:r)))
                 } else {
                     arr.append((type: "Empty", position: CGPoint(x:c, y:r)))
                 }
@@ -50,7 +43,7 @@ class BoardModel: NSObject {
         let type = piece.type
         let color = (type.contains("Black")) ? "Black" : "White"
         var moves = [CGPoint]()
-    
+        
         if type.contains("Rook") {
             var path = [true, true, true, true]
             for d in 1..<BOARD_DIMENSIONS - 1{
@@ -66,13 +59,11 @@ class BoardModel: NSObject {
                         continue
                     }
                     let possiblePieceColor = (possiblePiece.type.contains("Black")) ? "Black" : "White"
-
+                    
                     if path[i] {
                         if possiblePiece.type == "Empty"{
-                            print("1")
                             moves.append(possiblePiece.position)
                         } else if (color != possiblePieceColor){
-                            print("2 \(possiblePieceColor) \(possiblePiece.type)")
                             moves.append(possiblePiece.position)
                             path[i] = false
                         } else {
@@ -82,11 +73,23 @@ class BoardModel: NSObject {
                 }
             }
         }
-        if type.contains("King"){
-        
-        }
-        if type == "Pawn" {
-            
+        if type.contains("Pawn") {
+            let direction = (color == "Black") ? 1 : -1
+            for i in -1...1{
+                let next = getPieceAtLocation(location: CGPoint(x: Int(piece.position.x) + i, y: Int(piece.position.y) + direction))
+                if next.type == "Not Found" {
+                    continue
+                }
+                
+                if i != 0 {
+                    let possiblePieceColor = (next.type.contains("Black")) ? "Black" : "White"
+                    if possiblePieceColor != color && next.type != "Empty" {
+                        moves.append(next.position)
+                    }
+                } else {
+                    moves.append(next.position)
+                }
+            }
         }
         print("Allowed moves for Rook")
         print(moves)
@@ -107,6 +110,6 @@ class BoardModel: NSObject {
         }
         return ("Not Found", CGPoint.zero)
     }
-
+    
     
 }
