@@ -15,6 +15,7 @@
 		42417E3A1E065E1A004DD251 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E391E065E1A004DD251 /* Constants.swift */; };
 		42417E3C1E066572004DD251 /* PieceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E3B1E066572004DD251 /* PieceView.swift */; };
 		42417E3E1E066729004DD251 /* ChessViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E3D1E066729004DD251 /* ChessViewController.swift */; };
+		42417E431E067BF7004DD251 /* BoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E421E067BF7004DD251 /* BoardModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		42417E391E065E1A004DD251 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		42417E3B1E066572004DD251 /* PieceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PieceView.swift; sourceTree = "<group>"; };
 		42417E3D1E066729004DD251 /* ChessViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChessViewController.swift; sourceTree = "<group>"; };
+		42417E421E067BF7004DD251 /* BoardModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			isa = PBXGroup;
 			children = (
 				42417E391E065E1A004DD251 /* Constants.swift */,
+				42417E411E067BB7004DD251 /* Model */,
 				42417E371E065ABD004DD251 /* View Controllers */,
 				42417E361E065AB6004DD251 /* Views */,
 				42417E241E0659D7004DD251 /* Main.storyboard */,
@@ -95,6 +98,14 @@
 				42417E201E0659D7004DD251 /* AppDelegate.swift */,
 			);
 			name = Other;
+			sourceTree = "<group>";
+		};
+		42417E411E067BB7004DD251 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				42417E421E067BF7004DD251 /* BoardModel.swift */,
+			);
+			name = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -169,6 +180,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42417E431E067BF7004DD251 /* BoardModel.swift in Sources */,
 				42417E3C1E066572004DD251 /* PieceView.swift in Sources */,
 				42417E351E065AAF004DD251 /* BoardView.swift in Sources */,
 				42417E211E0659D7004DD251 /* AppDelegate.swift in Sources */,

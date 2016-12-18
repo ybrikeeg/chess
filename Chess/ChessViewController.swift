@@ -11,11 +11,14 @@ import UIKit
 class ChessViewController: UIViewController {
 
     var boardView = BoardView()
+    var boardModel = BoardModel()
     
     override func viewDidLoad()
     {
         super.viewDidLoad()
         self.view.backgroundColor = UIColor.lightText
+        let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
+        self.view.addGestureRecognizer(tap)
     }
     
     override func viewDidAppear(_ animated: Bool)
@@ -23,6 +26,15 @@ class ChessViewController: UIViewController {
         super.viewDidAppear(animated)
         createBoard()
         boardView.createPieces()
+    }
+    
+    
+    
+    func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
+    {
+        let touchPoint = gestureRecognizer.location(in: self.boardView)
+        let gridLocation = boardView.tapAtLocation(tap: touchPoint)
+        let p = boardModel.getPieceAtLocation(location: gridLocation)
     }
     
     private func createBoard()

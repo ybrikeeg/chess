@@ -29,6 +29,16 @@ class BoardView: UIView {
         return
     }
     
+    
+    /**
+     * Given a position on the board, return the grid coordinates -> 0 - CHECKER_WIDTH
+     */
+    func tapAtLocation(tap: CGPoint) -> CGPoint
+    {
+        return CGPoint(x: Int(tap.x / CHECKER_WIDTH), y: Int(tap.y / CHECKER_WIDTH))
+    }
+    
+    
     func createPieces()
     {
         layPieces(color: "Black")
