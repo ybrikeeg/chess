@@ -34,7 +34,9 @@ class ChessViewController: UIViewController {
     {
         let touchPoint = gestureRecognizer.location(in: self.boardView)
         let gridLocation = boardView.tapAtLocation(tap: touchPoint)
-        let p = boardModel.getPieceAtLocation(location: gridLocation)
+//        let p = boardModel.getPieceAtLocation(location: gridLocation)
+        let moves = boardModel.getValidMovesAtLocation(location: gridLocation)
+        self.boardView.shadeCheckers(shadeChecker: moves)
     }
     
     private func createBoard()

@@ -9,8 +9,8 @@
 import UIKit
 
 class BoardView: UIView {
-
-    var checkers = [UIView]()
+    
+    var checkers = [(view: TileView, position:CGPoint)]()
     var CHECKER_WIDTH = CGFloat(0.0)
     
     override init(frame: CGRect)
@@ -20,15 +20,37 @@ class BoardView: UIView {
         CHECKER_WIDTH = CGFloat(CGFloat(frame.size.width) / CGFloat(BOARD_DIMENSIONS))
         for r in 0..<BOARD_DIMENSIONS {
             for c in 0..<BOARD_DIMENSIONS {
-                let v = UIView(frame: CGRect(x: CGFloat(c) * CHECKER_WIDTH, y: CGFloat(r) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH))
+                let v = TileView(frame: CGRect(x: CGFloat(c) * CHECKER_WIDTH, y: CGFloat(r) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH))
                 v.backgroundColor = ((r + c) % 2 == 0) ? UIColor(red:(234.0/255.0), green:(212.0/255.0), blue:(177.0/255.0), alpha:1.0) : UIColor(red:(181.0/255.0), green:(136.0/255.0), blue:(99.0/255.0), alpha:1.0)
                 self.addSubview(v)
-                checkers.append(v)
+                checkers.append((v, CGPoint(x: c, y: r)))
             }
         }
         return
     }
     
+    
+    /**
+     * Given an array of position, show the dot for the corresponding tile
+     */
+    func shadeCheckers(shadeChecker: [CGPoint])
+    {
+        var toShade = [TileView]()
+        for shade in shadeChecker {
+            for checker in checkers {
+                if checker.position == shade {
+                    toShade.append(checker.view)
+                    break
+                }
+            }
+        }
+        for t in checkers {
+            t.view.showDot(value: false)
+        }
+        for t in toShade {
+            t.showDot(value: true)
+        }
+    }
     
     /**
      * Given a position on the board, return the grid coordinates -> 0 - CHECKER_WIDTH
@@ -68,11 +90,11 @@ class BoardView: UIView {
     }
     
     /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
-    }
-    */
-
+     // Only override draw() if you perform custom drawing.
+     // An empty implementation adversely affects performance during animation.
+     override func draw(_ rect: CGRect) {
+     // Drawing code
+     }
+     */
+    
 }
