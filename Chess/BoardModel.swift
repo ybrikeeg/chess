@@ -10,41 +10,59 @@ import UIKit
 
 class BoardModel: NSObject {
     
-    var board =  Array<Array<PieceModel>>()
-
+    var board = NSMutableDictionary()
+    
+    
     override init() {
         super.init()
         
         // initialize board and pieces
         for r in 0..<BOARD_DIMENSIONS {
-            var arr = [PieceModel]()
             let color = (r < 4) ? BLACK: WHITE
             for c in 0..<BOARD_DIMENSIONS {
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
-                    arr.append(PieceModel(type: color + PIECE_ORDER[c], location: CGPoint(x: c, y: r)))
+                    let piece = PieceModel(type: color + PIECE_ORDER[c], location: CGPoint(x: c, y: r))
+                    board.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-                    arr.append(PieceModel(type: color + "Pawn", location: CGPoint(x: c, y: r)))
-
+                    let piece = PieceModel(type: color + "Pawn", location: CGPoint(x: c, y: r))
+                    board.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
                 } else {
-                    arr.append(PieceModel(type: EMPTY, location: CGPoint(x: c, y: r)))
+                    let piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
+                    board.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
                 }
             }
-            self.board.append(arr)
         }
         
         printBoard()
         return
     }
     
+    
+    private func convertCGPointToKey(location: CGPoint) -> String
+    {
+        let newPoint = CGPoint(x: Int(location.x), y: Int(location.y))
+        return NSStringFromCGPoint(newPoint)
+    }
+    
     private func printBoard()
     {
-        for b in board {
-            var a = [String]()
-            for p in b {
-                a.append(p.type)
+        print("printing board")
+        let keys = self.board.allKeys as! [String]
+        let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
+        var arr = [String]()
+        var count = 0
+        for key in sortedArray {
+            arr.append(key)
+            count += 1
+            
+            
+            if count == BOARD_DIMENSIONS {
+                print(arr)
+                arr.removeAll()
+                count = 0
             }
-            print(a)
         }
+
     }
 
     /**
@@ -52,10 +70,10 @@ class BoardModel: NSObject {
     */
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        let piece = self.board[Int(from.y)][Int(from.x)]
+        let piece = self.board[convertCGPointToKey(location: from)] as! PieceModel
         piece.location = to
-        self.board[Int(to.y)][Int(to.x)] = piece
-        self.board[Int(from.y)][Int(from.x)] = PieceModel(type: EMPTY, location: CGPoint(x: from.y, y: from.x))
+        self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
+        self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
         printBoard()
     }
     
@@ -133,16 +151,11 @@ class BoardModel: NSObject {
      */
     private func getPieceAtLocation(location: CGPoint) -> PieceModel
     {
-        for r in 0..<BOARD_DIMENSIONS {
-            for c in 0..<BOARD_DIMENSIONS {
-                let p = self.board[r][c]
-                if p.location == location {
-                    return p
-                }
-            }
+        if let piece = self.board[convertCGPointToKey(location: location)] {
+            return piece as! PieceModel
         }
-        print("model not found")
-        return PieceModel(type:NOT_FOUND, location: CGPoint.zero)
+        print("No piece for \(convertCGPointToKey(location: location))")
+        return NOT_FOUND_PIECE
     }
     
 }

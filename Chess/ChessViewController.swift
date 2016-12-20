@@ -35,12 +35,13 @@ class ChessViewController: UIViewController {
     {
         let touchPoint = gestureRecognizer.location(in: self.boardView)
         let gridLocation = boardView.tapAtLocation(tap: touchPoint)
+        print("Touch location on grid \(gridLocation)")
         //check if gridLocation is highlighted
         if boardView.locationIsHighlighted(location: gridLocation) {
             self.boardModel.movePiece(from: lastTouchLocation, to: gridLocation)
             self.boardView.movePiece(from: lastTouchLocation, to: gridLocation)
             self.boardView.shadeCheckers(shadeChecker: [])
-
+            playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
         } else {
             lastTouchLocation = gridLocation
             let moves = boardModel.getValidMovesAtLocation(location: gridLocation, forPlayer: playerTurn)

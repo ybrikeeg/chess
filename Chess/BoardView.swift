@@ -71,12 +71,11 @@ class BoardView: UIView {
         let pieceToMove = getPieceAtLocation(location: from)
         let positionToMoveTo = convertLocationToPosition(location: to)
         
-        UIView.animate(withDuration: 1.0, animations: {
-            
+        UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
             pieceToMove.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
-            
-        })
-        pieceToMove.location = to
+        }) { (finished) in
+            pieceToMove.location = to
+        }
     }
     
     
