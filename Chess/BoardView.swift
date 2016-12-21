@@ -45,14 +45,14 @@ class BoardView: UIView {
     /**
     *   Get the PieceView at a given location
     */
-    private func getPieceAtLocation(location: CGPoint) -> PieceView
+    private func getPieceAtLocation(location: CGPoint) -> PieceView?
     {
         for p in pieces {
             if p.location == location {
                 return p
             }
         }
-        return pieces.first!
+        return nil
     }
     
     /**
@@ -68,13 +68,17 @@ class BoardView: UIView {
     */
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        let pieceToMove = getPieceAtLocation(location: from)
+        let pieceToMove = getPieceAtLocation(location: from)!
         let positionToMoveTo = convertLocationToPosition(location: to)
-        
+        let pieceToRemove = getPieceAtLocation(location: to)
         UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
             pieceToMove.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
         }) { (finished) in
             pieceToMove.location = to
+            if let remove = pieceToRemove {
+                self.pieces.remove(at: self.pieces.index(of: remove)!)
+                remove.removeFromSuperview()
+            }
         }
     }
     

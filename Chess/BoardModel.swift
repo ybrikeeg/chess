@@ -71,9 +71,10 @@ class BoardModel: NSObject {
     */
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        let piece = self.board[convertCGPointToKey(location: from)] as! PieceModel
+        let piece = getPieceAtLocation(location: from)
         piece.location = to
         piece.isAtStartingPosition = false
+        let pieceTo = getPieceAtLocation(location: to)
         self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
         self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
         printBoard()

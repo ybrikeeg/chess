@@ -38,8 +38,8 @@ class ChessViewController: UIViewController {
         print("Touch location on grid \(gridLocation)")
         //check if gridLocation is highlighted
         if boardView.locationIsHighlighted(location: gridLocation) {
-            self.boardModel.movePiece(from: lastTouchLocation, to: gridLocation)
             self.boardView.movePiece(from: lastTouchLocation, to: gridLocation)
+            self.boardModel.movePiece(from: lastTouchLocation, to: gridLocation)
             self.boardView.shadeCheckers(shadeChecker: [])
             playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
         } else {
