@@ -131,7 +131,7 @@ class BoardView: UIView {
                     self.addSubview(piece)
                     self.pieces.append(piece)
                 } else {
-                    let name = color + "Pawn"
+                    let name = color + PAWN
                     let piece = PieceView(frame: CGRect(x: CGFloat(c) * CHECKER_WIDTH, y: CGFloat(r + offset) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: c, y: r + offset))
                     self.addSubview(piece)
                     self.pieces.append(piece)

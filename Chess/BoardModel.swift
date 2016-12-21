@@ -71,13 +71,13 @@ class BoardModel: NSObject {
     */
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        let piece = getPieceAtLocation(location: from)
-        piece.location = to
-        piece.isAtStartingPosition = false
-        let pieceTo = getPieceAtLocation(location: to)
-        self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
-        self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
-        printBoard()
+        if let piece = getPieceAtLocation(location: from) {
+            piece.location = to
+            piece.isAtStartingPosition = false
+            self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
+            self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
+            printBoard()
+        }
     }
     
     /**
@@ -85,26 +85,28 @@ class BoardModel: NSObject {
     */
     func getValidMovesAtLocation(location: CGPoint, forPlayer: String) -> [CGPoint]
     {
-        let piece = getPieceAtLocation(location: location)
-        if piece.color != forPlayer {
-            return []
-        }        
-        let validMoves = piece.getValidMoves(board: self)
-        print("Possible moves")
-        print(validMoves)
-        return validMoves
+        if let piece = getPieceAtLocation(location: location) {
+            if piece.color != forPlayer {
+                return []
+            }
+            let validMoves = piece.getValidMoves(board: self)
+            print("Possible moves")
+            print(validMoves)
+            return validMoves
+        }
+        return []
     }
     
     /**
      *  Given a location on the board, return the name of the piece
      */
-    func getPieceAtLocation(location: CGPoint) -> PieceModel
+    func getPieceAtLocation(location: CGPoint) -> PieceModel?
     {
         if let piece = self.board[convertCGPointToKey(location: location)] {
             return piece as! PieceModel
         }
         print("No piece for \(convertCGPointToKey(location: location))")
-        return NOT_FOUND_PIECE
+        return nil
     }
     
 }
