@@ -86,9 +86,7 @@ class BoardModel: NSObject {
     func getValidMovesAtLocation(location: CGPoint, forPlayer: String) -> [CGPoint]
     {
         if let piece = getPieceAtLocation(location: location) {
-            if piece.color != forPlayer {
-                return []
-            }
+            if piece.color != forPlayer { return [] }
             let validMoves = piece.getValidMoves(board: self)
             print("Possible moves")
             print(validMoves)
@@ -103,7 +101,7 @@ class BoardModel: NSObject {
     func getPieceAtLocation(location: CGPoint) -> PieceModel?
     {
         if let piece = self.board[convertCGPointToKey(location: location)] {
-            return piece as! PieceModel
+            return piece as? PieceModel
         }
         print("No piece for \(convertCGPointToKey(location: location))")
         return nil

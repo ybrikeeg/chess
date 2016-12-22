@@ -31,43 +31,46 @@ class PieceModel: NSObject {
             for i in -1...1 {
                 let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + direction))
                 if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
-                    if nextPiece.color == self.color {
-                        break
-                    }
+                    if nextPiece.color == self.color { break }
                     if i == 0 {
-                        if nextPiece.type == EMPTY {
-                            moves.append(nextPoint)
-                        }
+                        if nextPiece.type == EMPTY { moves.append(nextPoint) }
                         if self.isAtStartingPosition {
                             let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + (direction * 2)))
                             if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
-                                if (nextPiece.type == EMPTY) {
-                                    moves.append(nextPoint)
-                                }
+                                if nextPiece.type == EMPTY { moves.append(nextPoint) }
                             }
                         }
                     } else {
-                        if nextPiece.type != EMPTY {
-                            moves.append(nextPoint)
-                        }
+                        if nextPiece.type != EMPTY { moves.append(nextPoint) }
                     }
                 }
             }
         } else if self.type == ROOK {
-            let fileMoves = getFileMoves(board: board)
-            moves.append(contentsOf: fileMoves)
+            moves.append(contentsOf: getMoves(type: file, board: board))
         } else if self.type == BISHOP {
-            
+            moves.append(contentsOf: getMoves(type: diag, board:board))
+        } else if self.type == QUEEN {
+            moves.append(contentsOf: getMoves(type: file, board: board))
+            moves.append(contentsOf: getMoves(type: diag, board:board))
+        } else if self.type == KNIGHT {
+            moves.append(contentsOf: getMoves(type: kni, board: board, singleIter: true))
+        } else if self.type == KING {
+            moves.append(contentsOf: getMoves(type: neighbors, board: board, singleIter: true))
         }
         
         return moves
     }
     
+    
     let file = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    private func getFileMoves(board: BoardModel) -> [CGPoint]
+    let diag = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
+    let kni = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
+    let neighbors = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)]
+
+    private func getMoves(type: [(Int, Int)], board: BoardModel, singleIter: Bool = false) -> [CGPoint]
     {
         var moves = [CGPoint]()
-        for direction in file {
+        for direction in type {
             var idx = 1
             while true {
                 let newPoint = CGPoint(x: Int(self.location.x) + direction.0 * idx, y: Int(self.location.y) + direction.1 * idx)
@@ -77,13 +80,9 @@ class PieceModel: NSObject {
                     } else if newPiece.color != self.color {
                         moves.append(newPoint)
                         break
-                    } else {
-                        break
-                    }
-                } else {
-                    break
-                }
-                
+                    } else { break }
+                } else { break }
+                if singleIter { break }
                 idx += 1
             }
         }
