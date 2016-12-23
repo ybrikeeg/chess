@@ -8,19 +8,26 @@
 
 import UIKit
 
-class PieceModel: NSObject {
+class PieceModel: NSObject, NSCopying {
 
     var type: String = ""
     var location: CGPoint = CGPoint.zero
     var color: String = ""
-    var isAtStartingPosition = true
-    init(type: String, color: String, location: CGPoint)
+    var isAtStartingPosition = false
+    
+    init(type: String, color: String, location: CGPoint, starting: Bool = true)
     {
         super.init()
         self.type = type
         self.location = location
         self.color = color
+        self.isAtStartingPosition = starting
         return
+    }
+    
+    func copy(with zone: NSZone? = nil) -> Any {
+        let copy = PieceModel(type: type, color: color, location: location, starting: isAtStartingPosition)
+        return copy
     }
     
     func getValidMoves(board: BoardModel) -> [CGPoint]
@@ -57,15 +64,14 @@ class PieceModel: NSObject {
         } else if self.type == KING {
             moves.append(contentsOf: getMoves(type: neighbors, board: board, singleIter: true))
         }
-        
         return moves
     }
     
     
-    let file = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    let diag = [(1, 1), (-1, 1), (-1, -1), (1, -1)]
-    let kni = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)]
-    let neighbors = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)]
+    let file = [(0, 1), (1, 0), (0, -1), (-1, 0)] // rook
+    let diag = [(1, 1), (-1, 1), (-1, -1), (1, -1)] // bishop
+    let kni = [(2, 1), (1, 2), (-1, 2), (-2, 1), (-2, -1), (-1, -2), (1, -2), (2, -1)] //knight
+    let neighbors = [(0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (1, 1)] // king
 
     private func getMoves(type: [(Int, Int)], board: BoardModel, singleIter: Bool = false) -> [CGPoint]
     {
@@ -88,4 +94,34 @@ class PieceModel: NSObject {
         }
         return moves
     }
+    
+    func getSuperKingmoves(board: BoardModel) -> [CGPoint]
+    {
+        var moves = [CGPoint]()
+        moves.append(contentsOf: getMoves(type: file, board: board))
+        moves.append(contentsOf: getMoves(type: diag, board:board))
+        moves.append(contentsOf: getMoves(type: kni, board: board, singleIter: true))
+        return moves
+    }
+    
+//    func checkValidationForType(type: String, board: BoardModel) -> [CGPoint]
+//    {
+//        var moves = [CGPoint]()
+//        if type == PAWN {
+//            let direction = (self.color == BLACK) ? 1 : -1
+//            for i in -1...1 {
+//                let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + direction))
+//                if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
+//                    if nextPiece.color == self.color { break }
+//                    if i != 0 {
+//                        if nextPiece.type != EMPTY { moves.append(nextPoint) }
+//                    }
+//                }
+//            }
+//        } else if type == ROOK {
+//            moves.append(contentsOf: getMoves(type: file, board: board))
+//        }
+//        
+//        return moves
+//    }
 }

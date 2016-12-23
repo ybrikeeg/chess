@@ -12,7 +12,7 @@ class TileView: UIView {
 
     var dot = UIView()
     let DOT_WIDTH = CGFloat(10)
-    override init(frame: CGRect) {
+    init(frame: CGRect, row: Int, col: Int) {
         super.init(frame: frame)
         
         dot = UIView(frame: CGRect(x: frame.size.width/2 - CGFloat(DOT_WIDTH/2), y: frame.size.height/2 - CGFloat(DOT_WIDTH/2), width: DOT_WIDTH, height: DOT_WIDTH))
@@ -20,6 +20,13 @@ class TileView: UIView {
         dot.backgroundColor = UIColor.green
         self.addSubview(dot)
         dot.isHidden = true
+        
+        let lab = UILabel()
+        lab.text = "(\(col), \(row))"
+        lab.font = UIFont.boldSystemFont(ofSize: 8)
+        lab.sizeToFit()
+        lab.frame.origin = CGPoint.zero
+        self.addSubview(lab)
     }
 
     func showDot(value: Bool)
