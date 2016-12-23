@@ -38,13 +38,15 @@ class PieceModel: NSObject, NSCopying {
             for i in -1...1 {
                 let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + direction))
                 if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
-                    if nextPiece.color == self.color { break }
+                    if nextPiece.color == self.color { continue }
                     if i == 0 {
-                        if nextPiece.type == EMPTY { moves.append(nextPoint) }
-                        if self.isAtStartingPosition {
-                            let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + (direction * 2)))
-                            if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
-                                if nextPiece.type == EMPTY { moves.append(nextPoint) }
+                        if nextPiece.type == EMPTY {
+                            moves.append(nextPoint)
+                            if self.isAtStartingPosition {
+                                let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + (direction * 2)))
+                                if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
+                                    if nextPiece.type == EMPTY { moves.append(nextPoint) }
+                                }
                             }
                         }
                     } else {
@@ -103,25 +105,4 @@ class PieceModel: NSObject, NSCopying {
         moves.append(contentsOf: getMoves(type: kni, board: board, singleIter: true))
         return moves
     }
-    
-//    func checkValidationForType(type: String, board: BoardModel) -> [CGPoint]
-//    {
-//        var moves = [CGPoint]()
-//        if type == PAWN {
-//            let direction = (self.color == BLACK) ? 1 : -1
-//            for i in -1...1 {
-//                let nextPoint = CGPoint(x: Int(Int(self.location.x) + i), y: Int(Int(self.location.y) + direction))
-//                if let nextPiece = board.getPieceAtLocation(location: nextPoint) {
-//                    if nextPiece.color == self.color { break }
-//                    if i != 0 {
-//                        if nextPiece.type != EMPTY { moves.append(nextPoint) }
-//                    }
-//                }
-//            }
-//        } else if type == ROOK {
-//            moves.append(contentsOf: getMoves(type: file, board: board))
-//        }
-//        
-//        return moves
-//    }
 }

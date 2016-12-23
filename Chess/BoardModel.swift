@@ -84,6 +84,7 @@ class BoardModel: NSObject {
                 count = 0
             }
         }
+        print("white king at \(whiteKing?.location)")
     }
     
     /**
@@ -122,7 +123,11 @@ class BoardModel: NSObject {
             print("after moving \(from) to \(to)")
             
             //does the move put your opponent in check
-            let isCheck = checkValidation(player: (piece.color == WHITE) ? WHITE : BLACK)
+            var player = (piece.color == WHITE) ? BLACK : WHITE
+            if isSimulation {
+                player = (piece.color == BLACK) ? BLACK : WHITE
+            }
+            let isCheck = playerIsInCheck(player: player)
             if isCheck {
                 print("+++++++++++++++++YOU ARE IN CHECK")
             }else {
@@ -135,32 +140,29 @@ class BoardModel: NSObject {
     /**
      *  Given the player and the piece just moved, check the player's opponent is in check
      */
-    func checkValidation(player: String) -> Bool
+    func playerIsInCheck(player: String) -> Bool
     {
-        let opponentKing = (player == WHITE) ? blackKing : whiteKing
+        let king = (player == WHITE) ? whiteKing : blackKing
         //get queen + knight moves from opponents king
-        let superkingMoves = opponentKing?.getSuperKingmoves(board: self)
+        let superkingMoves = king?.getSuperKingmoves(board: self)
         
         var checkCandidates = [PieceModel]()
         //get list of all pieces touching kings super-view
         for point in superkingMoves! {
             if let piece = getPieceAtLocation(location: point) {
-                if piece.type != EMPTY {
-                    checkCandidates.append(piece)
-                }
+                if piece.type != EMPTY { checkCandidates.append(piece) }
             }
         }
-        
         for candidate in checkCandidates {
             //the piece just moved is in the king's super-view. Determine if this piece is of the appropriate type to check him
             if let pieceInQuestionToCheck = getPieceAtLocation(location: candidate.location) {
-                let diff = CGPoint(x: abs(candidate.location.x - (opponentKing?.location.x)!), y: abs(candidate.location.y - (opponentKing?.location.y)!))
+                let diff = CGPoint(x: abs(candidate.location.x - (king?.location.x)!), y: abs(candidate.location.y - (king?.location.y)!))
                 //diagonal
                 if diff.x == diff.y {
                     //queen or bishop
                     if pieceInQuestionToCheck.type == QUEEN || pieceInQuestionToCheck.type == BISHOP { return true }
                     //pawn
-                    if pieceInQuestionToCheck.type == PAWN { return true }
+                    if pieceInQuestionToCheck.type == PAWN && diff.x == 1 { return true }
                 }
                     //on a file
                 else if diff.x * diff.y == 0 {
@@ -177,6 +179,13 @@ class BoardModel: NSObject {
     {
         self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
         self.board.setValue(replacement, forKey: convertCGPointToKey(location: replacement.location))
+        if original.type == KING {
+            if original.color == WHITE {
+                whiteKing = original
+            } else {
+                blackKing = original
+            }
+        }
         print("after undoing")
         printBoard()
     }
@@ -184,9 +193,11 @@ class BoardModel: NSObject {
     
     private func simulateMove(piece: PieceModel, moveTo: CGPoint) -> Bool
     {
+        var isValidMove = true
         let originalPiece = piece.copy() as! PieceModel
         let replacedPiece = getPieceAtLocation(location: moveTo)
         let originalReplace = replacedPiece?.copy() as! PieceModel
+        
         print("Original location: \(originalPiece.location)")
         //move piece
         movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)
@@ -195,13 +206,13 @@ class BoardModel: NSObject {
         //assume player is the current player
         //piece just moved is the opponents piece
         let king = (originalPiece.color == WHITE) ? whiteKing : blackKing
-        //        if checkValidation(player: <#T##String#>, piece: <#T##PieceModel#>)
+        if playerIsInCheck(player: originalPiece.color) {
+            isValidMove = false
+        }
         print("King location \(king?.location)")
-        
-        
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace)
-        return true
+        return isValidMove
     }
     
     /**
@@ -211,15 +222,20 @@ class BoardModel: NSObject {
     {
         if let piece = getPieceAtLocation(location: location) {
             if piece.color != forPlayer { return [] }
-            let validMoves = piece.getValidMoves(board: self)
+            var validMoves = piece.getValidMoves(board: self)
             let originalPiece = piece.copy() as! PieceModel
             
             for move in validMoves {
                 print(move)
-                //                let newBoard = simulateMove(piece: originalPiece, moveTo: move)
+                let isValid = simulateMove(piece: originalPiece, moveTo: move)
+                if !isValid {
+                    if let idx = validMoves.index(of: move) {
+                        validMoves.remove(at: idx)
+                    }
+                    print("\(move) is NOT valid")
+                }
             }
-            //            print("Possible moves")
-            //            print(validMoves)
+            
             return validMoves
         }
         return []
