@@ -14,7 +14,7 @@ class PieceModel: NSObject, NSCopying {
     var location: CGPoint = CGPoint.zero
     var color: String = ""
     var isAtStartingPosition = false
-    
+    var value = -1
     init(type: String, color: String, location: CGPoint, starting: Bool = true)
     {
         super.init()
@@ -22,6 +22,19 @@ class PieceModel: NSObject, NSCopying {
         self.location = location
         self.color = color
         self.isAtStartingPosition = starting
+        if type == PAWN {
+            self.value = 1
+        } else if type == ROOK {
+            self.value = 5
+        } else if type == KNIGHT {
+            self.value = 3
+        } else if type == BISHOP {
+            self.value = 3
+        } else if type == QUEEN {
+            self.value = 9
+        } else if type == KING {
+            self.value = 100
+        }
         return
     }
     

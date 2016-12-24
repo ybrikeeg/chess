@@ -8,7 +8,7 @@
 
 import UIKit
 
-class BoardModel: NSObject {
+class BoardModel: NSObject, NSCopying {
     
     var board = NSMutableDictionary()
     var whitePlayer = NSMutableDictionary()
@@ -20,6 +20,22 @@ class BoardModel: NSObject {
         self.board = model.board
         self.whitePlayer = model.whitePlayer
         self.blackPlayer = model.blackPlayer
+    }
+    
+    init(board: NSMutableDictionary, whitePlayer: NSMutableDictionary, blackPlayer: NSMutableDictionary, whiteKing: PieceModel?, blackKing: PieceModel?)
+    {
+        super.init()
+        self.board = board
+        self.whitePlayer = whitePlayer
+        self.blackPlayer = blackPlayer
+        self.whiteKing = whiteKing
+        self.blackKing = blackKing
+        return
+    }
+    
+    func copy(with zone: NSZone? = nil) -> Any {
+        let copy = BoardModel(board: board, whitePlayer: whitePlayer, blackPlayer: blackPlayer, whiteKing: whiteKing, blackKing: blackKing)
+        return copy
     }
     
     override init() {
@@ -66,43 +82,92 @@ class BoardModel: NSObject {
         return NSStringFromCGPoint(newPoint)
     }
     
-    private func printBoard()
+    func printBoard()
     {
-        print("printing board")
         let keys = self.board.allKeys as! [String]
         let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
-        var arr = [(String, String)]()
+        var arr = [String]()
+        var masterArr = [[String]]()
         var count = 0
         for key in sortedArray {
             let piece = self.board[key] as! PieceModel
-            arr.append((piece.type, key))
+            var st = piece.type
+            let t = (piece.color == WHITE) ? "W" : "B"
+            if piece.type != EMPTY { st += " (" + t + ")" }
+            st = st.padding(toLength: 10, withPad: " ", startingAt: 0)
+            arr.append(st)
             count += 1
             
             if count == BOARD_DIMENSIONS {
-                print(arr)
+                masterArr.append(arr)
                 arr.removeAll()
                 count = 0
             }
         }
-    }
     
-    func computerMove(depth: Int) -> (CGPoint, CGPoint)
+        for r in 0..<BOARD_DIMENSIONS {
+            var a = [String]()
+            for c in 0..<BOARD_DIMENSIONS {
+                a.append(masterArr[c][r])
+            }
+            print(a)
+        }
+    }
+    func getPlayerPiece(player: String) -> [PieceModel]
     {
-        //assume computer is black
-        //get random move
-        var allMoves = [(CGPoint, CGPoint)]()
-        for key in self.blackPlayer.allKeys {
-            let piece = self.blackPlayer[key] as! PieceModel
-            let loc = piece.location
-            let moves = getValidMovesAtLocation(location: piece.location, forPlayer: BLACK)
-            for move in moves {
-                allMoves.append((loc, move))
+        var pieces = [PieceModel]()
+        for r in 0..<BOARD_DIMENSIONS {
+            for c in 0..<BOARD_DIMENSIONS {
+                if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {
+                    if piece.color == player {
+                        pieces.append(piece)
+                    }
+                }
             }
         }
-        let randomIdx = Int(Float(arc4random()) / Float(UINT32_MAX) * Float(allMoves.count))
-        let tuple = allMoves[randomIdx]
+        return pieces
+    }
+    
+    func scoreBoard() -> Float
+    {
+        //assume computer is black
+        var whitePieceTotal = 0
+        var blackPieceTotal = 0
+        var whiteLocationTotal = 0
+        var blackLocationTotal = 0
         
-        return (tuple.0, tuple.1)
+        
+        for r in 0..<BOARD_DIMENSIONS {
+            for c in 0..<BOARD_DIMENSIONS {
+                if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {
+                    if piece.color == WHITE {
+                        whiteLocationTotal += HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)]
+                    } else if piece.color == BLACK {
+                        blackLocationTotal += HEAT_MAP_BLACK[Int(piece.location.y)][Int(piece.location.x)]
+
+                    }
+                }
+                
+            }
+        }
+//        for (_, piece) in whitePlayer {
+//            let piece = piece as! PieceModel
+//            whitePieceTotal += piece.value
+//            if HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)] != 0 {
+//                print("adding value of \(HEAT_MAP_WHITE[Int(piece.location.x)][Int(piece.location.y)])")
+//            }
+//            whiteLocationTotal += HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)]
+//        }
+//        
+//        for (_, piece) in blackPlayer {
+//            let piece = piece as! PieceModel
+//            blackPieceTotal += piece.value
+//            //flip loc to get heat map score
+//            blackLocationTotal += HEAT_MAP_BLACK[Int(piece.location.y)][Int(piece.location.x)]
+//        }
+        
+        return Float(blackLocationTotal - whiteLocationTotal)
+//        return Float((blackPieceTotal - whitePieceTotal) * 2) + Float(blackLocationTotal - whiteLocationTotal)
     }
     
     /**
@@ -138,20 +203,18 @@ class BoardModel: NSObject {
                     blackPlayer.setValue(piece, forKey: convertCGPointToKey(location: to))
                 }
             }
-            print("after moving \(from) to \(to)")
-            
             //does the move put your opponent in check
             var player = (piece.color == WHITE) ? BLACK : WHITE
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             }
             let isCheck = playerIsInCheck(player: player)
-            if isCheck {
-                print("+++++++++++++++++YOU ARE IN CHECK")
-            }else {
-                print("------------------you are not in check")
-            }
-            printBoard()
+//            if isCheck {
+//                print("+++++++++++++++++YOU ARE IN CHECK")
+//            }else {
+//                print("------------------you are not in check")
+//            }
+//            printBoard()
         }
     }
     
@@ -204,8 +267,8 @@ class BoardModel: NSObject {
                 blackKing = original
             }
         }
-        print("after undoing")
-        printBoard()
+//        print("after undoing")
+//        printBoard()
     }
     
     
@@ -216,7 +279,7 @@ class BoardModel: NSObject {
         let replacedPiece = getPieceAtLocation(location: moveTo)
         let originalReplace = replacedPiece?.copy() as! PieceModel
         
-        print("Original location: \(originalPiece.location)")
+//        print("Original location: \(originalPiece.location)")
         //move piece
         movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)        
         //assume player is the current player
@@ -246,7 +309,6 @@ class BoardModel: NSObject {
             let originalPiece = piece.copy() as! PieceModel
             
             for move in validMoves {
-                print(move)
                 let isValid = simulateMove(piece: originalPiece, moveTo: move)
                 if !isValid {
                     if let idx = validMoves.index(of: move) {
