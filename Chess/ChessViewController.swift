@@ -30,83 +30,14 @@ class ChessViewController: UIViewController {
     
     var playerTurn = WHITE
     var human = WHITE
-
     var lastTouchLocation = CGPoint.zero
     
     
-    
-    func negamax(node: BoardModel, depth: Int, alpha: Float, beta: Float, color: String) -> Float //(Float, (CGPoint, CGPoint))
-    {
-        if depth == 0 {
-            let flip = (color == BLACK) ? Float(1.0) : Float(-1.0)
-            node.printBoard()
-            print("intermediately returning \(node.scoreBoard() * flip)")
-            return node.scoreBoard() * flip
-//            return (node.scoreBoard() * flip, (CGPoint.zero, CGPoint.zero))
-        }
-        
-        //get all moves for this player
-        let playerPieces = (color == WHITE) ? node.whitePlayer : node.blackPlayer
-        var allMoves = [(CGPoint, CGPoint)]()
-        for key in playerPieces.allKeys {
-            let piece = playerPieces[key] as! PieceModel
-            let loc = piece.location
-            let moves = node.getValidMovesAtLocation(location: piece.location, forPlayer: color)
-            for move in moves {
-                allMoves.append((loc, move))
-            }
-        }
-        
-        var bestValue = Float.infinity * -1.0
-//        var bestValue = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
-//        var alpha = alpha
-        
-        //create copy of board
-        let originalBoardCopy = node.copy() as! BoardModel
-        for move in allMoves {
-//            print("Depth (\(depth)) - about to apply move \(move.0) to \(move.1)")
-            let boardCopy = originalBoardCopy.copy() as! BoardModel
-            let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
-            let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-//            print("Pre board")
-//            boardCopy.printBoard()
-            boardCopy.movePiece(from: move.0, to: move.1)
-//            print("post board")
-//            boardCopy.printBoard()
-
-            //make a move on board copy and pass to recurse
-            var recurse = -1.0 * negamax(node: boardCopy, depth: depth - 1, alpha: -1.0 * beta, beta: -1.0 * alpha, color: (color == WHITE) ? BLACK : WHITE)
-            if recurse == 4.0{
-                print("found it")
-            }
-            if depth == 2 {
-                print("This board scored")
-                print(boardCopy.printBoard())
-                print("\(boardCopy.scoreBoard()) - \(recurse)")
-                print("\n\n")
-            }
-            
-            boardCopy.unmovePiece(original: p1, replacement: p2)
-
-            bestValue = max(bestValue, recurse)
-//            if bestValue < recurse.0 {
-//                print("setting new best value")
-//                bestValue = (recurse.0, move)
-//            }
-//            alpha = max(bestValue.0, alpha)
-//            if alpha > beta { break }
-        }
-        print("at the end of depth \(depth), returning \(bestValue)")
-        return bestValue
-    }
-    
     let DEPTH = 2
-    
-    
-    func minimax(node: BoardModel, depth: Int, maximizingPlayer: String) -> Float
+    func minimax(node: BoardModel, depth: Int, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
         if depth == 0 {
-            return node.scoreBoard()
+            return (node.scoreBoard(), (CGPoint.zero, CGPoint.zero))
         }
         
         print(node.printBoard())
@@ -124,7 +55,7 @@ class ChessViewController: UIViewController {
         let originalBoardCopy = node.copy() as! BoardModel
 
         if maximizingPlayer == BLACK {
-            var bestValue = Float.infinity * -1.0
+            var bestValue = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
@@ -136,13 +67,16 @@ class ChessViewController: UIViewController {
                 print("\(recurse) == \(boardCopy.scoreBoard())")
                 print("\n")
                 boardCopy.unmovePiece(original: p1, replacement: p2)
-                bestValue = max(bestValue, recurse)
+                if bestValue.0 < recurse.0 {
+                    bestValue = (recurse.0, move)
+                }
+//                bestValue = max(bestValue, recurse)
             }
             print("At depth \(depth) for BLACK, returning \(bestValue)")
             return bestValue
             
         } else {
-            var bestValue = Float.infinity
+            var bestValue = (Float.infinity, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
@@ -151,7 +85,10 @@ class ChessViewController: UIViewController {
                 let recurse = minimax(node: boardCopy, depth: depth - 1, maximizingPlayer: BLACK)
 //                print("recurse white depth \(depth) = \(recurse)")
                 boardCopy.unmovePiece(original: p1, replacement: p2)
-                bestValue = min(bestValue, recurse)
+                if bestValue.0 > recurse.0 {
+                    bestValue = (recurse.0, move)
+                }
+                //                bestValue = min(bestValue, recurse)
             }
             print("At depth \(depth) for WHITE, returning \(bestValue)")
             return bestValue
@@ -163,15 +100,10 @@ class ChessViewController: UIViewController {
         print("computer make a move")
         let when = DispatchTime.now() + 1 // change 2 to desired number of seconds
         DispatchQueue.main.asyncAfter(deadline: when) {
-            let val = self.minimax(node: self.boardModel, depth: self.DEPTH, maximizingPlayer: BLACK)
-            print("Final value is \(val)")
-//            let val = self.negamax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, color: BLACK)
-
-            //            let move = self.boardModel.computerMove(depth: 3)
-//            print("moving from \(move.0) to \(move.1)")
-//            self.movePiece(from: move.0, to: move.1)
-//            self.playerTurn = WHITE
-//            print("Board score is \(self.boardModel.scoreBoard())")
+            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, maximizingPlayer: BLACK)
+            print("Final value is \(bestMove)")
+            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+            self.playerTurn = WHITE
         }
     }
     

@@ -11,30 +11,24 @@ import UIKit
 class BoardModel: NSObject, NSCopying {
     
     var board = NSMutableDictionary()
-    var whitePlayer = NSMutableDictionary()
-    var blackPlayer = NSMutableDictionary()
     var whiteKing: PieceModel? = nil
     var blackKing: PieceModel? = nil
     
     required init(_ model: BoardModel) {
         self.board = model.board
-        self.whitePlayer = model.whitePlayer
-        self.blackPlayer = model.blackPlayer
     }
     
-    init(board: NSMutableDictionary, whitePlayer: NSMutableDictionary, blackPlayer: NSMutableDictionary, whiteKing: PieceModel?, blackKing: PieceModel?)
+    init(board: NSMutableDictionary, whiteKing: PieceModel?, blackKing: PieceModel?)
     {
         super.init()
         self.board = board
-        self.whitePlayer = whitePlayer
-        self.blackPlayer = blackPlayer
         self.whiteKing = whiteKing
         self.blackKing = blackKing
         return
     }
     
     func copy(with zone: NSZone? = nil) -> Any {
-        let copy = BoardModel(board: board, whitePlayer: whitePlayer, blackPlayer: blackPlayer, whiteKing: whiteKing, blackKing: blackKing)
+        let copy = BoardModel(board: board, whiteKing: whiteKing, blackKing: blackKing)
         return copy
     }
     
@@ -61,13 +55,6 @@ class BoardModel: NSObject, NSCopying {
                 }
                 if let piece = piece {
                     board.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
-                    if piece.type != EMPTY {
-                        if color == BLACK {
-                            blackPlayer.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
-                        } else {
-                            whitePlayer.setValue(piece, forKey: convertCGPointToKey(location: piece.location))
-                        }
-                    }
                 }
             }
         }
@@ -178,31 +165,9 @@ class BoardModel: NSObject, NSCopying {
         if let piece = getPieceAtLocation(location: from) {
             piece.location = to
             piece.isAtStartingPosition = false
-            if let toPiece = getPieceAtLocation(location: to) {
-                if toPiece.type != EMPTY && isSimulation == false {
-                    if piece.color == WHITE {
-                        let count = blackPlayer.allKeys.count
-                        blackPlayer.removeObject(forKey: convertCGPointToKey(location: toPiece.location))
-                        assert(count - 1 == blackPlayer.allKeys.count)
-                    } else {
-                        let count = whitePlayer.allKeys.count
-                        whitePlayer.removeObject(forKey: convertCGPointToKey(location: toPiece.location))
-                        assert(count - 1 == whitePlayer.allKeys.count)
-                    }
-                }
-            }
             self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
             self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
-            
-            if isSimulation == false {
-                if piece.color == WHITE {
-                    whitePlayer.removeObject(forKey: convertCGPointToKey(location: from))
-                    whitePlayer.setValue(piece, forKey: convertCGPointToKey(location: to))
-                } else {
-                    blackPlayer.removeObject(forKey: convertCGPointToKey(location: from))
-                    blackPlayer.setValue(piece, forKey: convertCGPointToKey(location: to))
-                }
-            }
+
             //does the move put your opponent in check
             var player = (piece.color == WHITE) ? BLACK : WHITE
             if isSimulation {
@@ -288,13 +253,6 @@ class BoardModel: NSObject, NSCopying {
         }
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace)
-        
-        if originalPiece.color == WHITE {
-            self.whitePlayer[convertCGPointToKey(location: originalPiece.location)] = originalPiece
-        } else {
-            self.blackPlayer[convertCGPointToKey(location: originalPiece.location)] = originalPiece
-        }
-
         return isValidMove
     }
     
