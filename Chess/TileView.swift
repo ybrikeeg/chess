@@ -26,7 +26,7 @@ class TileView: UIView {
         lab.font = UIFont.boldSystemFont(ofSize: 8)
         lab.sizeToFit()
         lab.frame.origin = CGPoint.zero
-        self.addSubview(lab)
+//        self.addSubview(lab)
     }
 
     func showDot(value: Bool)
@@ -37,5 +37,4 @@ class TileView: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
 }

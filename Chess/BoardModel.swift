@@ -84,7 +84,25 @@ class BoardModel: NSObject {
                 count = 0
             }
         }
-        print("white king at \(whiteKing?.location)")
+    }
+    
+    func computerMove(depth: Int) -> (CGPoint, CGPoint)
+    {
+        //assume computer is black
+        //get random move
+        var allMoves = [(CGPoint, CGPoint)]()
+        for key in self.blackPlayer.allKeys {
+            let piece = self.blackPlayer[key] as! PieceModel
+            let loc = piece.location
+            let moves = getValidMovesAtLocation(location: piece.location, forPlayer: BLACK)
+            for move in moves {
+                allMoves.append((loc, move))
+            }
+        }
+        let randomIdx = Int(Float(arc4random()) / Float(UINT32_MAX) * Float(allMoves.count))
+        let tuple = allMoves[randomIdx]
+        
+        return (tuple.0, tuple.1)
     }
     
     /**
@@ -200,18 +218,20 @@ class BoardModel: NSObject {
         
         print("Original location: \(originalPiece.location)")
         //move piece
-        movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)
-        //check if king is in check
-        
+        movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)        
         //assume player is the current player
-        //piece just moved is the opponents piece
-        let king = (originalPiece.color == WHITE) ? whiteKing : blackKing
         if playerIsInCheck(player: originalPiece.color) {
             isValidMove = false
         }
-        print("King location \(king?.location)")
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace)
+        
+        if originalPiece.color == WHITE {
+            self.whitePlayer[convertCGPointToKey(location: originalPiece.location)] = originalPiece
+        } else {
+            self.blackPlayer[convertCGPointToKey(location: originalPiece.location)] = originalPiece
+        }
+
         return isValidMove
     }
     

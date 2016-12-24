@@ -146,6 +146,7 @@
 				TargetAttributes = {
 					42417E1C1E0659D7004DD251 = {
 						CreatedOnToolsVersion = 8.2;
+						DevelopmentTeam = 767G9VAVBQ;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -316,7 +317,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 767G9VAVBQ;
 				INFOPLIST_FILE = Chess/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.geewhiz.kirby.Chess;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -328,7 +331,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 767G9VAVBQ;
 				INFOPLIST_FILE = Chess/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.geewhiz.kirby.Chess;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -355,6 +360,7 @@
 				42417E311E0659D7004DD251 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
