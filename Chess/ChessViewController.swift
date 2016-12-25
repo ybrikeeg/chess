@@ -38,9 +38,7 @@ class ChessViewController: UIViewController {
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
         iterCount += 1
-        if iterCount % 1000 == 0 {
-            print("Iteration \(iterCount)")
-        }
+        if iterCount % 1000 == 0 { print("Iteration \(iterCount)") }
         if depth == 0 {
             return (node.getBoardScoringHeuristic(), (CGPoint.zero, CGPoint.zero))
         }
@@ -71,11 +69,8 @@ class ChessViewController: UIViewController {
                 if bestValue.0 < recurse.0 {
                     bestValue = (recurse.0, move)
                 }
-                
                 alpha = max(alpha, recurse.0)
-                if beta <= alpha {
-                    break
-                }
+                if beta <= alpha { break }
             }
             return bestValue
             
@@ -91,13 +86,9 @@ class ChessViewController: UIViewController {
                 if bestValue.0 > recurse.0 {
                     bestValue = (recurse.0, move)
                 }
-                
                 beta = min(beta, recurse.0)
-                if beta <= alpha {
-                    break
-                }
+                if beta <= alpha { break }
             }
-//            print("At depth \(depth) for WHITE, returning \(bestValue)")
             return bestValue
         }
     }
@@ -105,14 +96,11 @@ class ChessViewController: UIViewController {
     private func computerMove()
     {
         print("computer make a move")
-        let when = DispatchTime.now() + 1 // change 2 to desired number of seconds
-        DispatchQueue.main.asyncAfter(deadline: when) {
-            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
-            print("Final value is \(bestMove) after \(self.iterCount) iterations")
-            self.iterCount = 0
-            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
-            self.playerTurn = WHITE
-        }
+        let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
+        print("Final value is \(bestMove) after \(self.iterCount) iterations")
+        self.iterCount = 0
+        self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+        self.playerTurn = WHITE
     }
     
     func movePiece(from: CGPoint, to: CGPoint)
