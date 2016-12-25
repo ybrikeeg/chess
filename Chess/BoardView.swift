@@ -35,7 +35,7 @@ class BoardView: UIView {
     {
         for checker in checkers {
             if checker.position == location {
-                return !checker.view.dot.isHidden
+                return checker.view.isHighlighted()
             }
         }
         
@@ -86,22 +86,28 @@ class BoardView: UIView {
     /**
      * Given an array of position, show the dot for the corresponding tile
      */
-    func shadeCheckers(shadeChecker: [CGPoint])
+    func shadeCheckers(shadeChecker: [(CGPoint, Bool)])
     {
-        var toShade = [TileView]()
+        //if bool is true, then the tile contains a piece and should be shaded differently
+        var toShade = [(TileView, Bool)]()
         for shade in shadeChecker {
             for checker in checkers {
-                if checker.position == shade {
-                    toShade.append(checker.view)
+                if checker.position == shade.0 {
+                    toShade.append((checker.view, shade.1))
                     break
                 }
             }
         }
         for t in checkers {
             t.view.showDot(value: false)
+            t.view.showBorder(value: false)
         }
         for t in toShade {
-            t.showDot(value: true)
+            if t.1 == false {
+                t.0.showDot(value: true)
+            } else {
+                t.0.showBorder(value: true)
+            }
         }
     }
     

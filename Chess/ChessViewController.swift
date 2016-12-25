@@ -34,7 +34,8 @@ class ChessViewController: UIViewController {
     
     
     var iterCount = 0
-    let DEPTH = 3
+    let DEPTH = 2
+    
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
         iterCount += 1
@@ -95,7 +96,6 @@ class ChessViewController: UIViewController {
     
     private func computerMove()
     {
-        print("computer make a move")
         let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
         print("Final value is \(bestMove) after \(self.iterCount) iterations")
         self.iterCount = 0
@@ -114,18 +114,34 @@ class ChessViewController: UIViewController {
         if playerTurn == human {
             let touchPoint = gestureRecognizer.location(in: self.boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
-            print("Touch location on grid \(gridLocation)")
+//            print("Touch location on grid \(gridLocation)")
             //check if gridLocation is highlighted
             if boardView.locationIsHighlighted(location: gridLocation) {
                 movePiece(from: lastTouchLocation, to: gridLocation)
                 self.boardView.shadeCheckers(shadeChecker: [])
                 print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
                 playerTurn = BLACK
-                computerMove()
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+                    print("computer make a move")
+                    self.computerMove()
+                }
             } else {
                 lastTouchLocation = gridLocation
                 let moves = boardModel.getValidMovesAtLocation(location: gridLocation, forPlayer: playerTurn)
-                self.boardView.shadeCheckers(shadeChecker: moves)
+                var detailedMoves = [(CGPoint, Bool)]()
+                for move in moves {
+                    var added = false
+                    if let piece = self.boardModel.getPieceAtLocation(location: move) {
+                        if piece.type != EMPTY && piece.color != human {
+                            detailedMoves.append((move, true))
+                            added = true
+                        }
+                    }
+                    if !added {
+                        detailedMoves.append((move, false))
+                    }
+                }
+                self.boardView.shadeCheckers(shadeChecker: detailedMoves)
             }
         }
     }
