@@ -71,6 +71,7 @@ class BoardModel: NSObject, NSCopying {
     
     func printBoard()
     {
+        return
         let keys = self.board.allKeys as! [String]
         let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
         var arr = [String]()
@@ -100,6 +101,7 @@ class BoardModel: NSObject, NSCopying {
             print(a)
         }
     }
+    
     func getPlayerPiece(player: String) -> [PieceModel]
     {
         var pieces = [PieceModel]()
@@ -115,7 +117,7 @@ class BoardModel: NSObject, NSCopying {
         return pieces
     }
     
-    func scoreBoard() -> Float
+    func getBoardScoringHeuristic() -> Float
     {
         //assume computer is black
         var whitePieceTotal = 0
@@ -129,32 +131,15 @@ class BoardModel: NSObject, NSCopying {
                 if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {
                     if piece.color == WHITE {
                         whiteLocationTotal += HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)]
+                        whitePieceTotal += piece.value
                     } else if piece.color == BLACK {
                         blackLocationTotal += HEAT_MAP_BLACK[Int(piece.location.y)][Int(piece.location.x)]
-
+                        blackPieceTotal += piece.value
                     }
                 }
-                
             }
         }
-//        for (_, piece) in whitePlayer {
-//            let piece = piece as! PieceModel
-//            whitePieceTotal += piece.value
-//            if HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)] != 0 {
-//                print("adding value of \(HEAT_MAP_WHITE[Int(piece.location.x)][Int(piece.location.y)])")
-//            }
-//            whiteLocationTotal += HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)]
-//        }
-//        
-//        for (_, piece) in blackPlayer {
-//            let piece = piece as! PieceModel
-//            blackPieceTotal += piece.value
-//            //flip loc to get heat map score
-//            blackLocationTotal += HEAT_MAP_BLACK[Int(piece.location.y)][Int(piece.location.x)]
-//        }
-        
-        return Float(blackLocationTotal - whiteLocationTotal)
-//        return Float((blackPieceTotal - whitePieceTotal) * 2) + Float(blackLocationTotal - whiteLocationTotal)
+        return Float((blackPieceTotal - whitePieceTotal) * 10) + Float(blackLocationTotal - whiteLocationTotal)
     }
     
     /**
@@ -221,6 +206,9 @@ class BoardModel: NSObject, NSCopying {
         return false
     }
     
+    /**
+     *  Unmoves a piece to restore the state of the board
+     */
     func unmovePiece(original: PieceModel, replacement: PieceModel)
     {
         self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
@@ -232,22 +220,19 @@ class BoardModel: NSObject, NSCopying {
                 blackKing = original
             }
         }
-//        print("after undoing")
-//        printBoard()
     }
     
-    
+    /**
+     *  Simulate moving a piece to a point. Return true if the move is valid, false is not (puts player in check)
+     */
     private func simulateMove(piece: PieceModel, moveTo: CGPoint) -> Bool
     {
         var isValidMove = true
         let originalPiece = piece.copy() as! PieceModel
         let replacedPiece = getPieceAtLocation(location: moveTo)
         let originalReplace = replacedPiece?.copy() as! PieceModel
-        
-//        print("Original location: \(originalPiece.location)")
         //move piece
         movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)        
-        //assume player is the current player
         if playerIsInCheck(player: originalPiece.color) {
             isValidMove = false
         }
@@ -272,10 +257,8 @@ class BoardModel: NSObject, NSCopying {
                     if let idx = validMoves.index(of: move) {
                         validMoves.remove(at: idx)
                     }
-                    print("\(move) is NOT valid")
                 }
             }
-            
             return validMoves
         }
         return []

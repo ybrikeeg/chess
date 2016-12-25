@@ -33,14 +33,18 @@ class ChessViewController: UIViewController {
     var lastTouchLocation = CGPoint.zero
     
     
-    let DEPTH = 2
-    func minimax(node: BoardModel, depth: Int, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
+    var iterCount = 0
+    let DEPTH = 3
+    func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
+        iterCount += 1
+        if iterCount % 1000 == 0 {
+            print("Iteration \(iterCount)")
+        }
         if depth == 0 {
-            return (node.scoreBoard(), (CGPoint.zero, CGPoint.zero))
+            return (node.getBoardScoringHeuristic(), (CGPoint.zero, CGPoint.zero))
         }
         
-        print(node.printBoard())
         //get all moves
         let playerPieces = node.getPlayerPiece(player: maximizingPlayer)
         var allMoves = [(CGPoint, CGPoint)]()
@@ -53,7 +57,8 @@ class ChessViewController: UIViewController {
         }
         
         let originalBoardCopy = node.copy() as! BoardModel
-
+        var alpha = alpha
+        var beta = beta
         if maximizingPlayer == BLACK {
             var bestValue = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
@@ -61,18 +66,17 @@ class ChessViewController: UIViewController {
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
                 boardCopy.movePiece(from: move.0, to: move.1)
-                let recurse = minimax(node: boardCopy, depth: depth - 1, maximizingPlayer: WHITE)
-                print("recurse black depth \(depth) = \(recurse)")
-                print("This board scores \(boardCopy.printBoard())")
-                print("\(recurse) == \(boardCopy.scoreBoard())")
-                print("\n")
+                let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 < recurse.0 {
                     bestValue = (recurse.0, move)
                 }
-//                bestValue = max(bestValue, recurse)
+                
+                alpha = max(alpha, recurse.0)
+                if beta <= alpha {
+                    break
+                }
             }
-            print("At depth \(depth) for BLACK, returning \(bestValue)")
             return bestValue
             
         } else {
@@ -82,15 +86,18 @@ class ChessViewController: UIViewController {
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
                 boardCopy.movePiece(from: move.0, to: move.1)
-                let recurse = minimax(node: boardCopy, depth: depth - 1, maximizingPlayer: BLACK)
-//                print("recurse white depth \(depth) = \(recurse)")
+                let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 > recurse.0 {
                     bestValue = (recurse.0, move)
                 }
-                //                bestValue = min(bestValue, recurse)
+                
+                beta = min(beta, recurse.0)
+                if beta <= alpha {
+                    break
+                }
             }
-            print("At depth \(depth) for WHITE, returning \(bestValue)")
+//            print("At depth \(depth) for WHITE, returning \(bestValue)")
             return bestValue
         }
     }
@@ -100,8 +107,9 @@ class ChessViewController: UIViewController {
         print("computer make a move")
         let when = DispatchTime.now() + 1 // change 2 to desired number of seconds
         DispatchQueue.main.asyncAfter(deadline: when) {
-            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, maximizingPlayer: BLACK)
-            print("Final value is \(bestMove)")
+            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
+            print("Final value is \(bestMove) after \(self.iterCount) iterations")
+            self.iterCount = 0
             self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
             self.playerTurn = WHITE
         }
@@ -123,7 +131,7 @@ class ChessViewController: UIViewController {
             if boardView.locationIsHighlighted(location: gridLocation) {
                 movePiece(from: lastTouchLocation, to: gridLocation)
                 self.boardView.shadeCheckers(shadeChecker: [])
-                print("Board score is \(self.boardModel.scoreBoard())")
+                print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
                 playerTurn = BLACK
                 computerMove()
             } else {
