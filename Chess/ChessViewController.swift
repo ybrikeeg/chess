@@ -74,7 +74,6 @@ class ChessViewController: UIViewController {
                 if beta <= alpha { break }
             }
             return bestValue
-            
         } else {
             var bestValue = (Float.infinity, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
@@ -106,7 +105,12 @@ class ChessViewController: UIViewController {
     func movePiece(from: CGPoint, to: CGPoint)
     {
         self.boardView.movePiece(from: from, to: to)
-        self.boardModel.movePiece(from: from, to: to)
+        let inCheck = self.boardModel.movePiece(from: from, to: to)
+        if inCheck {
+            print("++++\((self.playerTurn == WHITE) ? BLACK : WHITE) is in CHECK")
+        } else {
+            print("----\((self.playerTurn == WHITE) ? BLACK : WHITE) is NOT in CHECK")
+        }
     }
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)

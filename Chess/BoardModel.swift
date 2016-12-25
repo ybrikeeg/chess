@@ -102,6 +102,19 @@ class BoardModel: NSObject, NSCopying {
         }
     }
     
+    func getKingForPlayer(player: String) -> PieceModel? {
+        for r in 0..<BOARD_DIMENSIONS {
+            for c in 0..<BOARD_DIMENSIONS {
+                if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {
+                    if piece.color == player && piece.type == KING {
+                        return piece
+                    }
+                }
+            }
+        }
+        return nil
+    }
+    
     func getPlayerPiece(player: String) -> [PieceModel]
     {
         var pieces = [PieceModel]()
@@ -145,7 +158,7 @@ class BoardModel: NSObject, NSCopying {
     /**
      *   Move a piece from location to location
      */
-    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false)
+    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false) -> Bool
     {
         if let piece = getPieceAtLocation(location: from) {
             piece.location = to
@@ -158,22 +171,18 @@ class BoardModel: NSObject, NSCopying {
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             }
-            let isCheck = playerIsInCheck(player: player)
-//            if isCheck {
-//                print("+++++++++++++++++YOU ARE IN CHECK")
-//            }else {
-//                print("------------------you are not in check")
-//            }
-//            printBoard()
+            return playerIsInCheck(player: player)
         }
+        return true
     }
+    
     
     /**
      *  Given the player and the piece just moved, check the player's opponent is in check
      */
     func playerIsInCheck(player: String) -> Bool
     {
-        let king = (player == WHITE) ? whiteKing : blackKing
+        let king = getKingForPlayer(player: player)
         //get queen + knight moves from opponents king
         let superkingMoves = king?.getSuperKingmoves(board: self)
         
