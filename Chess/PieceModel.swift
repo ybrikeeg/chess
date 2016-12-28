@@ -15,6 +15,7 @@ class PieceModel: NSObject, NSCopying {
     var color: String = ""
     var isAtStartingPosition = false
     var value = -1
+    var id = 0
     init(type: String, color: String, location: CGPoint, starting: Bool = true)
     {
         super.init()
@@ -34,6 +35,11 @@ class PieceModel: NSObject, NSCopying {
             self.value = 9
         } else if type == KING {
             self.value = 100
+        }
+        if type != EMPTY {
+            self.id = Int(location.x + 1 + location.y * 8)
+        } else {
+            self.id = -1
         }
         return
     }
@@ -78,6 +84,27 @@ class PieceModel: NSObject, NSCopying {
             moves.append(contentsOf: getMoves(type: kni, board: board, singleIter: true))
         } else if self.type == KING {
             moves.append(contentsOf: getMoves(type: neighbors, board: board, singleIter: true))
+            //check for castle
+            if self.isAtStartingPosition {
+                //check king side
+                let emptyBishop = board.getPieceAtLocation(location: CGPoint(x: self.location.x + 1, y: self.location.y))
+                let emptyKnight = board.getPieceAtLocation(location: CGPoint(x: self.location.x + 2, y: self.location.y))
+                if let rook = board.getPieceAtLocation(location: CGPoint(x: self.location.x + 3, y: self.location.y)) {
+                    if emptyBishop?.type == EMPTY && emptyKnight?.type == EMPTY && rook.isAtStartingPosition && rook.type == ROOK {
+                        moves.append(CGPoint(x: self.location.x + 2, y: self.location.y))
+                    }
+                }
+                //check queen side
+                let emptyQueen1 = board.getPieceAtLocation(location: CGPoint(x: self.location.x - 1, y: self.location.y))
+                let emptyBishop1 = board.getPieceAtLocation(location: CGPoint(x: self.location.x - 2, y: self.location.y))
+                let emptyKnight1 = board.getPieceAtLocation(location: CGPoint(x: self.location.x - 3, y: self.location.y))
+                if let rook = board.getPieceAtLocation(location: CGPoint(x: self.location.x - 4, y: self.location.y)) {
+                    if emptyQueen1?.type == EMPTY && emptyBishop1?.type == EMPTY && emptyKnight1?.type == EMPTY && rook.isAtStartingPosition && rook.type == ROOK {
+                        moves.append(CGPoint(x: self.location.x - 2, y: self.location.y))
+                    }
+                }
+
+            }
         }
         return moves
     }

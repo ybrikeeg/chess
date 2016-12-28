@@ -62,6 +62,64 @@ class BoardView: UIView {
     {
         return CGPoint(x: location.x * CHECKER_WIDTH, y: location.y * CHECKER_WIDTH)
     }
+
+    private func getLocationFromId(dictionary: NSDictionary, id: Int) -> CGPoint?
+    {
+        for key in dictionary.allKeys {
+            if let key = key as? String {
+                let val = dictionary[key] as! Int
+                if val == id {
+                    return CGPointFromString(key)
+                }
+            }
+        }
+        return nil
+    }
+    
+    func updateView(before: NSDictionary, after: NSDictionary, board: BoardModel)
+    {
+        var viewsToUpdate = [(PieceView, CGPoint)]()
+        var viewsToRemove = [PieceView]()
+        for r in 0..<BOARD_DIMENSIONS {
+            for c in 0..<BOARD_DIMENSIONS {
+                let startLoc = CGPoint(x:c, y:r)
+                let startKey = convertCGPointToKey(location: startLoc)
+                let beforeId = before[startKey] as! Int
+                if beforeId == -1 { continue }
+                if let afterLoc = getLocationFromId(dictionary: after, id: beforeId) {
+                    //this piece needs to move
+                    if beforeId != -1 && startLoc != afterLoc {
+                        viewsToUpdate.append((getPieceAtLocation(location: startLoc)!, afterLoc))
+                    }
+                } else {
+                    viewsToRemove.append(getPieceAtLocation(location: startLoc)!)
+                }
+            }
+        }
+        
+        for viewToUpdate in viewsToUpdate {
+            let positionToMoveTo = convertLocationToPosition(location: viewToUpdate.1)
+            UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
+                viewToUpdate.0.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
+            }) { (finished) in
+                viewToUpdate.0.location = viewToUpdate.1
+            }
+        }
+        
+        for viewToRemove in viewsToRemove {
+            self.pieces.remove(at: self.pieces.index(of: viewToRemove)!)
+            viewToRemove.removeFromSuperview()
+        }
+//        UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
+//            pieceToMove.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
+//        }) { (finished) in
+//            pieceToMove.location = to
+//            if let remove = pieceToRemove {
+//                self.pieces.remove(at: self.pieces.index(of: remove)!)
+//                remove.removeFromSuperview()
+//            }
+//        }
+    }
     
     /**
     *   Move a piece from point to point

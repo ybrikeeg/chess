@@ -34,6 +34,7 @@ class BoardModel: NSObject, NSCopying {
     
     override init() {
         super.init()
+
         // initialize board and pieces
         for r in 0..<BOARD_DIMENSIONS {
             let color = (r < 4) ? BLACK: WHITE
@@ -62,16 +63,9 @@ class BoardModel: NSObject, NSCopying {
         return
     }
     
-    
-    private func convertCGPointToKey(location: CGPoint) -> String
-    {
-        let newPoint = CGPoint(x: Int(location.x), y: Int(location.y))
-        return NSStringFromCGPoint(newPoint)
-    }
-    
     func printBoard()
     {
-        return
+        var str = ""
         let keys = self.board.allKeys as! [String]
         let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
         var arr = [String]()
@@ -82,7 +76,7 @@ class BoardModel: NSObject, NSCopying {
             var st = piece.type
             let t = (piece.color == WHITE) ? "W" : "B"
             if piece.type != EMPTY { st += " (" + t + ")" }
-            st = st.padding(toLength: 10, withPad: " ", startingAt: 0)
+            st = st.padding(toLength: 13, withPad: " ", startingAt: 0)
             arr.append(st)
             count += 1
             
@@ -99,6 +93,7 @@ class BoardModel: NSObject, NSCopying {
                 a.append(masterArr[c][r])
             }
             print(a)
+            str += a.description
         }
     }
     
@@ -158,16 +153,55 @@ class BoardModel: NSObject, NSCopying {
     /**
      *   Move a piece from location to location
      */
-    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false) -> Bool
+    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false, isCastle: Int = 0) -> Bool
     {
         if let piece = getPieceAtLocation(location: from) {
             piece.location = to
             piece.isAtStartingPosition = false
-            self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
-            self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
+            var isCastle = isCastle
+            if piece.type == KING && (to.x - from.x == 2) {
+                isCastle = KING_SIDE_CASTLE
+            } else if piece.type == KING && (to.x - from.x == -2) {
+                isCastle = QUEEN_SIDE_CASTLE
+            }
+            
+            
+            if isCastle == NO_CASTLE {
+                self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
+                self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
+            } else if isCastle == KING_SIDE_CASTLE {
+                //move king
+                self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
+                self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
 
+                //move rook
+                let cornerLoc = CGPoint(x: BOARD_DIMENSIONS - 1, y: Int(piece.location.y))
+                if let rook = getPieceAtLocation(location: cornerLoc){
+                    let newRookPos = CGPoint(x: from.x + 1, y: piece.location.y)
+                    rook.isAtStartingPosition = false
+                    rook.location = newRookPos
+                    self.board.setValue(rook, forKey: convertCGPointToKey(location: newRookPos))
+                    //place empty piece in corner
+                    self.board.setValue(createEmptyPieceAtLocation(location: cornerLoc), forKey: convertCGPointToKey(location: cornerLoc))
+                }
+            } else if isCastle == QUEEN_SIDE_CASTLE {
+                //move king
+                self.board.setValue(piece, forKey: convertCGPointToKey(location: to))
+                self.board.setValue(createEmptyPieceAtLocation(location: from), forKey: convertCGPointToKey(location: from))
+                //move rook
+                let cornerLoc = CGPoint(x: 0, y: Int(piece.location.y))
+                if let rook = getPieceAtLocation(location: cornerLoc){
+                    let newRookPos = CGPoint(x: from.x - 1, y: piece.location.y)
+                    rook.isAtStartingPosition = false
+                    rook.location = newRookPos
+                    self.board.setValue(rook, forKey: convertCGPointToKey(location: newRookPos))
+                    //place empty piece in corner
+                    self.board.setValue(createEmptyPieceAtLocation(location: cornerLoc), forKey: convertCGPointToKey(location: cornerLoc))
+                }
+            }
             //does the move put your opponent in check
             var player = (piece.color == WHITE) ? BLACK : WHITE
+            //make sure
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             }
@@ -175,7 +209,6 @@ class BoardModel: NSObject, NSCopying {
         }
         return true
     }
-    
     
     /**
      *  Given the player and the piece just moved, check the player's opponent is in check
@@ -218,19 +251,60 @@ class BoardModel: NSObject, NSCopying {
     /**
      *  Unmoves a piece to restore the state of the board
      */
-    func unmovePiece(original: PieceModel, replacement: PieceModel)
+    func unmovePiece(original: PieceModel, replacement: PieceModel, isCastle: Int = 0)
     {
-        self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
-        self.board.setValue(replacement, forKey: convertCGPointToKey(location: replacement.location))
-        if original.type == KING {
-            if original.color == WHITE {
-                whiteKing = original
-            } else {
-                blackKing = original
+        var isCastle = isCastle
+        if original.type == KING && (replacement.location.x - original.location.x == 2) {
+            isCastle = KING_SIDE_CASTLE
+        } else if original.type == KING && (replacement.location.x - original.location.x == -2) {
+            isCastle = QUEEN_SIDE_CASTLE
+        }
+        if isCastle == NO_CASTLE {
+            self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
+            self.board.setValue(replacement, forKey: convertCGPointToKey(location: replacement.location))
+            if original.type == KING {
+                if original.color == WHITE {
+                    whiteKing = original
+                } else {
+                    blackKing = original
+                }
             }
+        } else if isCastle == KING_SIDE_CASTLE {
+            //get rook
+            let cornerLoc = CGPoint(x: BOARD_DIMENSIONS - 1, y: Int(original.location.y))
+            let currentRookLoc = CGPoint(x: Int(original.location.x + 1), y: Int(original.location.y))
+            if let rook = getPieceAtLocation(location: currentRookLoc){
+                rook.isAtStartingPosition = true
+                rook.location = cornerLoc
+                self.board.setValue(rook, forKey: convertCGPointToKey(location: cornerLoc))
+            }
+            self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
+            let emptyBishopLoc = currentRookLoc
+            let emptyKnightLoc = CGPoint(x: Int(original.location.x + 2), y: Int(original.location.y))
+            self.board.setValue(createEmptyPieceAtLocation(location: emptyBishopLoc), forKey: convertCGPointToKey(location: emptyBishopLoc))
+            self.board.setValue(createEmptyPieceAtLocation(location: emptyKnightLoc), forKey: convertCGPointToKey(location: emptyKnightLoc))
+        } else if isCastle == QUEEN_SIDE_CASTLE {
+            //get rook
+            let cornerLoc = CGPoint(x: 0, y: Int(original.location.y))
+            let currentRookLoc = CGPoint(x: Int(original.location.x - 1), y: Int(original.location.y))
+            if let rook = getPieceAtLocation(location: currentRookLoc){
+                rook.isAtStartingPosition = true
+                rook.location = cornerLoc
+                self.board.setValue(rook, forKey: convertCGPointToKey(location: cornerLoc))
+            }
+            self.board.setValue(original, forKey: convertCGPointToKey(location: original.location))
+            let emptyQueenLoc = currentRookLoc
+            let emptyBishopLoc = CGPoint(x: Int(original.location.x - 2), y: Int(original.location.y))
+            let emptyKnightLoc = CGPoint(x: Int(original.location.x - 3), y: Int(original.location.y))
+            self.board.setValue(createEmptyPieceAtLocation(location: emptyQueenLoc), forKey: convertCGPointToKey(location: emptyQueenLoc))
+            self.board.setValue(createEmptyPieceAtLocation(location: emptyBishopLoc), forKey: convertCGPointToKey(location: emptyBishopLoc))
+            self.board.setValue(createEmptyPieceAtLocation(location: emptyKnightLoc), forKey: convertCGPointToKey(location: emptyKnightLoc))
         }
     }
     
+    let NO_CASTLE = 0
+    let KING_SIDE_CASTLE = 1
+    let QUEEN_SIDE_CASTLE = 2
     /**
      *  Simulate moving a piece to a point. Return true if the move is valid, false is not (puts player in check)
      */
@@ -240,13 +314,20 @@ class BoardModel: NSObject, NSCopying {
         let originalPiece = piece.copy() as! PieceModel
         let replacedPiece = getPieceAtLocation(location: moveTo)
         let originalReplace = replacedPiece?.copy() as! PieceModel
+        var isCastle = NO_CASTLE
+        if originalPiece.type == KING && ((replacedPiece?.location.x)! - originalPiece.location.x == 2) {
+            isCastle = KING_SIDE_CASTLE
+        } else if originalPiece.type == KING && ((replacedPiece?.location.x)! - originalPiece.location.x == -2) {
+            isCastle = QUEEN_SIDE_CASTLE
+
+        }
         //move piece
-        movePiece(from: originalPiece.location, to: moveTo, isSimulation: true)        
-        if playerIsInCheck(player: originalPiece.color) {
+        if movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle) {
             isValidMove = false
         }
+
         //undo move
-        unmovePiece(original: originalPiece, replacement: originalReplace)
+        unmovePiece(original: originalPiece, replacement: originalReplace, isCastle: isCastle)
         return isValidMove
     }
     

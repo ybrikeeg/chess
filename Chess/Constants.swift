@@ -35,6 +35,21 @@ func createEmptyPieceAtLocation(location: CGPoint) -> PieceModel
     return PieceModel(type: EMPTY, color: EMPTY, location: location)
 }
 
+func convertCGPointToKey(location: CGPoint) -> String
+{
+    let newPoint = CGPoint(x: Int(location.x), y: Int(location.y))
+    return NSStringFromCGPoint(newPoint)
+}
+
+func getPieceFromId(dictionary: NSDictionary, id: Int) -> PieceModel?
+{
+    for (_, value) in dictionary {
+        if let piece = value as? PieceModel {
+            if piece.id == id { return piece }
+        }
+    }
+    return nil
+}
 
 let HEAT_MAP_BLACK = [[0, 0, 0, 0, 0, 0, 0, 0],
                       [0, 0, 0, 0, 0, 0, 0, 0],

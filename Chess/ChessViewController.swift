@@ -64,7 +64,7 @@ class ChessViewController: UIViewController {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                boardCopy.movePiece(from: move.0, to: move.1)
+                _ = boardCopy.movePiece(from: move.0, to: move.1)
                 let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 < recurse.0 {
@@ -80,7 +80,7 @@ class ChessViewController: UIViewController {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                boardCopy.movePiece(from: move.0, to: move.1)
+                _ = boardCopy.movePiece(from: move.0, to: move.1)
                 let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 > recurse.0 {
@@ -104,13 +104,25 @@ class ChessViewController: UIViewController {
     
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        self.boardView.movePiece(from: from, to: to)
+        let before = NSMutableDictionary()
+        for (key, value) in self.boardModel.board {
+            let piece = value as! PieceModel
+            before.setValue(piece.id, forKey: key as! String)
+        }
         let inCheck = self.boardModel.movePiece(from: from, to: to)
+        let after = NSMutableDictionary()
+        for (key, value) in self.boardModel.board {
+            let piece = value as! PieceModel
+            after.setValue(piece.id, forKey: key as! String)
+        }
+        self.boardView.updateView(before: before, after: after, board: self.boardModel)
         if inCheck {
             print("++++\((self.playerTurn == WHITE) ? BLACK : WHITE) is in CHECK")
         } else {
             print("----\((self.playerTurn == WHITE) ? BLACK : WHITE) is NOT in CHECK")
         }
+        
+        self.boardModel.printBoard()
     }
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
@@ -118,7 +130,6 @@ class ChessViewController: UIViewController {
         if playerTurn == human {
             let touchPoint = gestureRecognizer.location(in: self.boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
-//            print("Touch location on grid \(gridLocation)")
             //check if gridLocation is highlighted
             if boardView.locationIsHighlighted(location: gridLocation) {
                 movePiece(from: lastTouchLocation, to: gridLocation)
