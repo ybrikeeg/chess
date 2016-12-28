@@ -63,7 +63,7 @@ class ChessViewController: UIViewController {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardCopy.movePiece(from: move.0, to: move.1)
+                _ = boardCopy.movePiece(from: move.0, to: move.1, isSimulation: true)
                 let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 < recurse.0 {
@@ -79,7 +79,7 @@ class ChessViewController: UIViewController {
                 let boardCopy = originalBoardCopy.copy() as! BoardModel
                 let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardCopy.movePiece(from: move.0, to: move.1)
+                _ = boardCopy.movePiece(from: move.0, to: move.1, isSimulation: true)
                 let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 > recurse.0 {
@@ -94,28 +94,44 @@ class ChessViewController: UIViewController {
     
     private func computerMove()
     {
-        let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
-        print("Final value is \(bestMove) after \(self.iterCount) iterations")
-        self.iterCount = 0
-        self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
-        self.playerTurn = WHITE
+        if playerTurn == BLACK {
+            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
+            print("Final value is \(bestMove) after \(self.iterCount) iterations")
+            self.iterCount = 0
+            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+        }
+    }
+    
+    private func simplifyBoard() -> NSDictionary
+    {
+        let simple = NSMutableDictionary()
+        for (key, value) in self.boardModel.board {
+            let piece = value as! PieceModel
+            simple.setValue(piece.id, forKey: key as! String)
+        }
+        return simple
     }
     
     func movePiece(from: CGPoint, to: CGPoint)
     {
-        let before = NSMutableDictionary()
-        for (key, value) in self.boardModel.board {
-            let piece = value as! PieceModel
-            before.setValue(piece.id, forKey: key as! String)
-        }
+        let before = simplifyBoard()
         let inCheck = self.boardModel.movePiece(from: from, to: to)
-        let after = NSMutableDictionary()
-        for (key, value) in self.boardModel.board {
-            let piece = value as! PieceModel
-            after.setValue(piece.id, forKey: key as! String)
-        }
+        let after = simplifyBoard()
         let playerInCheck = (self.playerTurn == WHITE) ? BLACK : WHITE
-        self.boardView.updateView(before: before, after: after, inCheck: inCheck, player: playerInCheck, board: self.boardModel)
+        
+        let isCheckMate = self.boardModel.isCheckMate(player: playerInCheck)
+        if isCheckMate {
+            print("++++CHECK MATE")
+            playerTurn = GAME_OVER
+        } else {
+            print("continue playing")
+            playerTurn = playerInCheck
+
+        }
+        
+        self.boardView.updateView(before: before, after: after, inCheck: inCheck, inCheckMate: isCheckMate, player: playerInCheck, board: self.boardModel)
+        
+
         self.boardModel.printBoard()
     }
     
@@ -128,7 +144,6 @@ class ChessViewController: UIViewController {
             if boardView.locationIsHighlighted(location: gridLocation) {
                 movePiece(from: lastTouchLocation, to: gridLocation)
                 print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
-                playerTurn = BLACK
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
                     print("computer make a move")
                     self.computerMove()

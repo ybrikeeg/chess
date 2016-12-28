@@ -24,7 +24,7 @@ let BLACK = "Black"
 let WHITE = "White"
 let NOT_FOUND = "Not Found"
 let EMPTY = "Empty"
-
+let GAME_OVER = "Game Over"
 
 let NOT_FOUND_PIECE = PieceModel(type:NOT_FOUND, color: EMPTY, location: CGPoint(x: -1, y: -1))
 

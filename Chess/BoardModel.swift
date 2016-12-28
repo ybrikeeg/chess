@@ -216,6 +216,8 @@ class BoardModel: NSObject, NSCopying {
             //make sure
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
+            } else {
+
             }
             return playerIsInCheck(player: player)
         }
@@ -354,6 +356,20 @@ class BoardModel: NSObject, NSCopying {
             return validMoves
         }
         return []
+    }
+    
+    func isCheckMate(player: String) -> Bool
+    {
+        //check if player in is check mate
+        var isCheckMate = true
+        for piece in getPlayerPiece(player: player) {
+            let moves = getValidMovesAtLocation(location: piece.location, forPlayer: player)
+            if moves.count > 0 {
+                isCheckMate = false
+                break
+            }
+        }
+        return isCheckMate
     }
     
     /**

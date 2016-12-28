@@ -40,11 +40,11 @@ class TileView: UIView {
         self.highlighted = value
     }
     
-    func showBorder(value: Bool, color: UIColor = UIColor.yellow)
+    func showBorder(value: Bool, color: UIColor = UIColor.yellow, width: CGFloat = 2.0)
     {
         self.highlighted = value
         if value {
-            self.layer.borderWidth = 2.0
+            self.layer.borderWidth = width
             self.layer.borderColor = color.cgColor
         } else {
             self.layer.borderWidth = 0.0
@@ -52,8 +52,14 @@ class TileView: UIView {
         }
     }
     
-    func inCheck(value: Bool) {
+    func inCheck(value: Bool)
+    {
         showBorder(value: value, color: UIColor.red)
+    }
+    
+    func inCheckMate(value: Bool)
+    {
+        showBorder(value: value, color: UIColor.red, width: 4.0)
     }
     
     required init?(coder aDecoder: NSCoder) {
