@@ -38,7 +38,6 @@ class BoardView: UIView {
                 return checker.view.isHighlighted()
             }
         }
-        
         return false
     }
     
@@ -111,7 +110,6 @@ class BoardView: UIView {
         for viewToUpdate in viewsToUpdate {
             let positionToMoveTo = convertLocationToPosition(location: viewToUpdate.1)
             let pieceModel = board.getPieceAtLocation(location: viewToUpdate.1)!
-            print(pieceModel)
             UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
                 viewToUpdate.0.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
                 viewToUpdate.0.updateType(type: pieceModel.color + pieceModel.type)
@@ -122,8 +120,12 @@ class BoardView: UIView {
         
         if !inCheckMate {
             for viewToRemove in viewsToRemove {
-                self.pieces.remove(at: self.pieces.index(of: viewToRemove)!)
-                viewToRemove.removeFromSuperview()
+                UIView.animate(withDuration: 0.2, animations: {
+                    viewToRemove.alpha = 0.0
+                }, completion: { (finished) in
+                    self.pieces.remove(at: self.pieces.index(of: viewToRemove)!)
+                    viewToRemove.removeFromSuperview()
+                })
             }
         }
         
@@ -201,41 +203,13 @@ class BoardView: UIView {
         return CGPoint(x: Int(tap.x / CHECKER_WIDTH), y: Int(tap.y / CHECKER_WIDTH))
     }
     
-    private func drawPiece(piece: PieceModel)
-    {
-        let name = piece.color + piece.type
-        let piece = PieceView(frame: CGRect(x: CGFloat(piece.location.x) * CHECKER_WIDTH, y: CGFloat(piece.location.y) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: piece.location.x, y: piece.location.y))
-        self.addSubview(piece)
-        self.pieces.append(piece)
-    }
-    
-    func createPieces(board: BoardModel)
+    func drawPieces(board: BoardModel)
     {
         for key in board.board.allKeys {
             if let piece = board.board[key] as? PieceModel {
                 if piece.type != EMPTY {
-                    drawPiece(piece: piece)
-                }
-            }
-        }
-        
-//        layPieces(color: BLACK)
-//        layPieces(color: WHITE)
-    }
-    
-    private func layPieces(color: String)
-    {
-        let offset = (color == BLACK) ? 0 : 6
-        for r in 0..<2 {
-            for c in 0..<BOARD_DIMENSIONS {
-                if (r == 0 && color == BLACK) || (r == 1 && color == WHITE) {
-                    let name = color + PIECE_ORDER[c]
-                    let piece = PieceView(frame: CGRect(x: CGFloat(c) * CHECKER_WIDTH, y: CGFloat(r + offset) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: c, y: r + offset))
-                    self.addSubview(piece)
-                    self.pieces.append(piece)
-                } else {
-                    let name = color + PAWN
-                    let piece = PieceView(frame: CGRect(x: CGFloat(c) * CHECKER_WIDTH, y: CGFloat(r + offset) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: c, y: r + offset))
+                    let name = piece.color + piece.type
+                    let piece = PieceView(frame: CGRect(x: CGFloat(piece.location.x) * CHECKER_WIDTH, y: CGFloat(piece.location.y) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: piece.location.x, y: piece.location.y))
                     self.addSubview(piece)
                     self.pieces.append(piece)
                 }

@@ -25,15 +25,15 @@ class ChessViewController: UIViewController {
     {
         super.viewDidAppear(animated)
         createBoard()
-        boardView.createPieces(board: self.boardModel)
+        boardView.drawPieces(board: self.boardModel)
     }
     
     var playerTurn = WHITE
     var human = WHITE
-    var lastTouchLocation = CGPoint.zero
+    var lastTouchLocation: CGPoint? = nil
     
     var iterCount = 0
-    let DEPTH = 2
+    let DEPTH = 3
     
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
@@ -121,17 +121,12 @@ class ChessViewController: UIViewController {
         
         let isCheckMate = self.boardModel.isCheckMate(player: playerInCheck)
         if isCheckMate {
-            print("++++CHECK MATE")
             playerTurn = GAME_OVER
         } else {
-            print("continue playing")
             playerTurn = playerInCheck
-
         }
         
         self.boardView.updateView(before: before, after: after, inCheck: inCheck, inCheckMate: isCheckMate, player: playerInCheck, board: self.boardModel)
-        
-
         self.boardModel.printBoard()
     }
     
@@ -141,8 +136,9 @@ class ChessViewController: UIViewController {
             let touchPoint = gestureRecognizer.location(in: self.boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
             //check if gridLocation is highlighted
-            if boardView.locationIsHighlighted(location: gridLocation) {
-                movePiece(from: lastTouchLocation, to: gridLocation)
+            if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) {
+                movePiece(from: lastTouchLocation!, to: gridLocation)
+                lastTouchLocation = nil
                 print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
                     print("computer make a move")
@@ -164,6 +160,7 @@ class ChessViewController: UIViewController {
                         detailedMoves.append((move, false))
                     }
                 }
+                if moves.count == 0 { lastTouchLocation = nil }
                 self.boardView.shadeCheckers(shadeChecker: detailedMoves)
             }
         }

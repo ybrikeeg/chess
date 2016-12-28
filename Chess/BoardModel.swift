@@ -33,28 +33,16 @@ class BoardModel: NSObject, NSCopying {
     
     override init() {
         super.init()
-
+        
         // initialize board and pieces
         for r in 0..<BOARD_DIMENSIONS {
             let color = (r < 4) ? BLACK: WHITE
             for c in 0..<BOARD_DIMENSIONS {
                 var piece:PieceModel? = nil
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
-                    if color == BLACK {
-                        if PIECE_ORDER[c] == KING {
-                            piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
-                        } else {
-                            piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
-                        }
-                    } else {
-                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
-                    }
+                    piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-                    if color == BLACK {
-                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
-                    } else {
-                        piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
-                    }
+                    piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
                 } else {
                     piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
                 }
@@ -90,7 +78,7 @@ class BoardModel: NSObject, NSCopying {
                 count = 0
             }
         }
-    
+        
         for r in 0..<BOARD_DIMENSIONS {
             var a = [String]()
             for c in 0..<BOARD_DIMENSIONS {
@@ -217,7 +205,7 @@ class BoardModel: NSObject, NSCopying {
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             } else {
-
+                
             }
             return playerIsInCheck(player: player)
         }
@@ -243,20 +231,21 @@ class BoardModel: NSObject, NSCopying {
         for candidate in checkCandidates {
             //the piece just moved is in the king's super-view. Determine if this piece is of the appropriate type to check him
             if let pieceInQuestionToCheck = getPieceAtLocation(location: candidate.location) {
-                let diff = CGPoint(x: abs(candidate.location.x - (king?.location.x)!), y: abs(candidate.location.y - (king?.location.y)!))
+                let diff = CGPoint(x: candidate.location.x - (king?.location.x)!, y: candidate.location.y - (king?.location.y)!)
                 //diagonal
-                if diff.x == diff.y {
+                if abs(diff.x) == abs(diff.y) {
                     //queen or bishop
                     if pieceInQuestionToCheck.type == QUEEN || pieceInQuestionToCheck.type == BISHOP { return true }
                     //pawn
-                    if pieceInQuestionToCheck.type == PAWN && diff.x == 1 { return true }
+                    let direction = (king?.color == BLACK) ? -1 : 1
+                    if pieceInQuestionToCheck.type == PAWN && Int(diff.x) == direction { return true }
                 }
                     //on a file
                 else if diff.x * diff.y == 0 {
                     if pieceInQuestionToCheck.type == QUEEN || pieceInQuestionToCheck.type == ROOK { return true }
                 }
                     //knight
-                else if (diff.x == 1 && diff.y == 2) || (diff.x == 2 && diff.y == 1) { return pieceInQuestionToCheck.type == KNIGHT }
+                else if (abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1) { return pieceInQuestionToCheck.type == KNIGHT }
             }
         }
         return false
@@ -329,7 +318,7 @@ class BoardModel: NSObject, NSCopying {
         if movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle) {
             isValidMove = false
         }
-
+        
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace, isCastle: isCastle)
         return isValidMove
