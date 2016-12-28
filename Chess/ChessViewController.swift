@@ -25,13 +25,12 @@ class ChessViewController: UIViewController {
     {
         super.viewDidAppear(animated)
         createBoard()
-        boardView.createPieces()
+        boardView.createPieces(board: self.boardModel)
     }
     
     var playerTurn = WHITE
     var human = WHITE
     var lastTouchLocation = CGPoint.zero
-    
     
     var iterCount = 0
     let DEPTH = 2

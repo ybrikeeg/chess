@@ -43,7 +43,7 @@ class BoardView: UIView {
     }
     
     /**
-    *   Get the PieceView at a given location
+    *   Get the PieceView at a given board location (ex {0, 0}, ..., {7, 7}
     */
     private func getPieceAtLocation(location: CGPoint) -> PieceView?
     {
@@ -99,8 +99,11 @@ class BoardView: UIView {
         
         for viewToUpdate in viewsToUpdate {
             let positionToMoveTo = convertLocationToPosition(location: viewToUpdate.1)
+            let pieceModel = board.getPieceAtLocation(location: viewToUpdate.1)!
+            print(pieceModel)
             UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
                 viewToUpdate.0.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
+                viewToUpdate.0.updateType(type: pieceModel.color + pieceModel.type)
             }) { (finished) in
                 viewToUpdate.0.location = viewToUpdate.1
             }
@@ -110,15 +113,7 @@ class BoardView: UIView {
             self.pieces.remove(at: self.pieces.index(of: viewToRemove)!)
             viewToRemove.removeFromSuperview()
         }
-//        UIView.animate(withDuration: 0.3, delay: 0.0, options: .curveEaseInOut, animations: {
-//            pieceToMove.frame = CGRect(x: positionToMoveTo.x, y: positionToMoveTo.y, width: self.CHECKER_WIDTH, height: self.CHECKER_WIDTH)
-//        }) { (finished) in
-//            pieceToMove.location = to
-//            if let remove = pieceToRemove {
-//                self.pieces.remove(at: self.pieces.index(of: remove)!)
-//                remove.removeFromSuperview()
-//            }
-//        }
+//        createPieces(board: board)
     }
     
     /**
@@ -177,11 +172,26 @@ class BoardView: UIView {
         return CGPoint(x: Int(tap.x / CHECKER_WIDTH), y: Int(tap.y / CHECKER_WIDTH))
     }
     
-    
-    func createPieces()
+    private func drawPiece(piece: PieceModel)
     {
-        layPieces(color: BLACK)
-        layPieces(color: WHITE)
+        let name = piece.color + piece.type
+        let piece = PieceView(frame: CGRect(x: CGFloat(piece.location.x) * CHECKER_WIDTH, y: CGFloat(piece.location.y) * CHECKER_WIDTH, width: CHECKER_WIDTH, height: CHECKER_WIDTH), type: name, location: CGPoint(x: piece.location.x, y: piece.location.y))
+        self.addSubview(piece)
+        self.pieces.append(piece)
+    }
+    
+    func createPieces(board: BoardModel)
+    {
+        for key in board.board.allKeys {
+            if let piece = board.board[key] as? PieceModel {
+                if piece.type != EMPTY {
+                    drawPiece(piece: piece)
+                }
+            }
+        }
+        
+//        layPieces(color: BLACK)
+//        layPieces(color: WHITE)
     }
     
     private func layPieces(color: String)

@@ -16,7 +16,8 @@ class PieceModel: NSObject, NSCopying {
     var isAtStartingPosition = false
     var value = -1
     var id = 0
-    init(type: String, color: String, location: CGPoint, starting: Bool = true)
+    
+    init(type: String, color: String, location: CGPoint, starting: Bool = true, id: Int = -1)
     {
         super.init()
         self.type = type
@@ -45,7 +46,7 @@ class PieceModel: NSObject, NSCopying {
     }
     
     func copy(with zone: NSZone? = nil) -> Any {
-        let copy = PieceModel(type: type, color: color, location: location, starting: isAtStartingPosition)
+        let copy = PieceModel(type: type, color: color, location: location, starting: isAtStartingPosition, id: id)
         return copy
     }
     
