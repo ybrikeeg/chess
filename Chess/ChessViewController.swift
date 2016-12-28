@@ -114,13 +114,8 @@ class ChessViewController: UIViewController {
             let piece = value as! PieceModel
             after.setValue(piece.id, forKey: key as! String)
         }
-        self.boardView.updateView(before: before, after: after, board: self.boardModel)
-        if inCheck {
-            print("++++\((self.playerTurn == WHITE) ? BLACK : WHITE) is in CHECK")
-        } else {
-            print("----\((self.playerTurn == WHITE) ? BLACK : WHITE) is NOT in CHECK")
-        }
-        
+        let playerInCheck = (self.playerTurn == WHITE) ? BLACK : WHITE
+        self.boardView.updateView(before: before, after: after, inCheck: inCheck, player: playerInCheck, board: self.boardModel)
         self.boardModel.printBoard()
     }
     
@@ -132,7 +127,6 @@ class ChessViewController: UIViewController {
             //check if gridLocation is highlighted
             if boardView.locationIsHighlighted(location: gridLocation) {
                 movePiece(from: lastTouchLocation, to: gridLocation)
-                self.boardView.shadeCheckers(shadeChecker: [])
                 print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
                 playerTurn = BLACK
                 DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {

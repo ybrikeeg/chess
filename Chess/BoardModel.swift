@@ -104,7 +104,7 @@ class BoardModel: NSObject, NSCopying {
     /*
      *  Get the king for the specificed player
      */
-    private func getKingForPlayer(player: String) -> PieceModel? {
+    func getKingForPlayer(player: String) -> PieceModel? {
         for r in 0..<BOARD_DIMENSIONS {
             for c in 0..<BOARD_DIMENSIONS {
                 if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {

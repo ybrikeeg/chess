@@ -40,17 +40,22 @@ class TileView: UIView {
         self.highlighted = value
     }
     
-    func showBorder(value: Bool)
+    func showBorder(value: Bool, color: UIColor = UIColor.yellow)
     {
         self.highlighted = value
         if value {
             self.layer.borderWidth = 2.0
-            self.layer.borderColor = UIColor.yellow.cgColor
+            self.layer.borderColor = color.cgColor
         } else {
             self.layer.borderWidth = 0.0
             self.layer.borderColor = UIColor.clear.cgColor
         }
     }
+    
+    func inCheck(value: Bool) {
+        showBorder(value: value, color: UIColor.red)
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

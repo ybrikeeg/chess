@@ -76,7 +76,18 @@ class BoardView: UIView {
         return nil
     }
     
-    func updateView(before: NSDictionary, after: NSDictionary, board: BoardModel)
+    private func getCheckerAtLocation(location: CGPoint) -> TileView?
+    {
+        for checker in checkers {
+            if checker.position == location {
+                return checker.view
+            }
+        }
+        assertionFailure("Could not find tile")
+        return nil
+    }
+    
+    func updateView(before: NSDictionary, after: NSDictionary, inCheck: Bool, player: String, board: BoardModel)
     {
         var viewsToUpdate = [(PieceView, CGPoint)]()
         var viewsToRemove = [PieceView]()
@@ -113,7 +124,17 @@ class BoardView: UIView {
             self.pieces.remove(at: self.pieces.index(of: viewToRemove)!)
             viewToRemove.removeFromSuperview()
         }
-//        createPieces(board: board)
+        
+        shadeCheckers(shadeChecker: [])
+        if inCheck {
+            if let king = board.getKingForPlayer(player: player) {
+                if let loc = getCheckerAtLocation(location: king.location) { loc.inCheck(value: true) }
+            }
+        } else {
+            if let king = board.getKingForPlayer(player: player) {
+                if let loc = getCheckerAtLocation(location: king.location) { loc.inCheck(value: false) }
+            }
+        }
     }
     
     /**
