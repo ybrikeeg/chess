@@ -66,7 +66,7 @@ class ChessViewController: UIViewController {
                 _ = boardCopy.movePiece(from: move.0, to: move.1, isSimulation: true)
                 let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
                 boardCopy.unmovePiece(original: p1, replacement: p2)
-                if bestValue.0 < recurse.0 {
+                if bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0{
                     bestValue = (recurse.0, move)
                 }
                 alpha = max(alpha, recurse.0)

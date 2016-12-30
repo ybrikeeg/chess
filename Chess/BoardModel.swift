@@ -40,18 +40,20 @@ class BoardModel: NSObject, NSCopying {
             for c in 0..<BOARD_DIMENSIONS {
                 var piece:PieceModel? = nil
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
-//                    if PIECE_ORDER[c] == KNIGHT || PIECE_ORDER[c] == KING {
-                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+                    piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+//                    if PIECE_ORDER[c] == KING {
+//                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
 //                    } else {
 //                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
 //                    }
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-//                    if abs(c) < 2 {
-                        piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
+                    piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
+//                    if abs(c) < 2 && color == WHITE {
+//                        piece = PieceModel(type:QUEEN, color: color, location: CGPoint(x: c, y: r))
+//
 //                    } else {
 //                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
 //                    }
-                    
                 } else {
                     piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
                 }
@@ -62,40 +64,6 @@ class BoardModel: NSObject, NSCopying {
         }
         printBoard()
         return
-    }
-    
-    func printBoard()
-    {
-        var str = ""
-        let keys = self.board.allKeys as! [String]
-        let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
-        var arr = [String]()
-        var masterArr = [[String]]()
-        var count = 0
-        for key in sortedArray {
-            let piece = self.board[key] as! PieceModel
-            var st = piece.type
-            let t = (piece.color == WHITE) ? "W" : "B"
-            if piece.type != EMPTY { st += " (" + t + ")" }
-            st = st.padding(toLength: 13, withPad: " ", startingAt: 0)
-            arr.append(st)
-            count += 1
-            
-            if count == BOARD_DIMENSIONS {
-                masterArr.append(arr)
-                arr.removeAll()
-                count = 0
-            }
-        }
-        
-        for r in 0..<BOARD_DIMENSIONS {
-            var a = [String]()
-            for c in 0..<BOARD_DIMENSIONS {
-                a.append(masterArr[c][r])
-            }
-            print(a)
-            str += a.description
-        }
     }
     
     /*
@@ -215,7 +183,7 @@ class BoardModel: NSObject, NSCopying {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             }
             
-            return playerIsInCheck(player: player)// && isKingAndInCheck
+            return playerIsInCheck(player: player)
         }
         return true
     }
@@ -248,10 +216,12 @@ class BoardModel: NSObject, NSCopying {
                 //pawn
                 let direction = (king?.color == BLACK) ? 1 : -1
                 if candidate.type == PAWN && Int(diff.y) == direction { return true }
+                if abs(diff.x) == 1 && abs(diff.y) == 1 { return candidate.type == KING }
             }
                 //on a file
             else if diff.x * diff.y == 0 {
                 if candidate.type == QUEEN || candidate.type == ROOK { return true }
+                if abs(diff.x) + abs(diff.y) == 1 { return candidate.type == KING }
             }
                 //knight
             else if (abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1) { return candidate.type == KNIGHT }
@@ -382,5 +352,39 @@ class BoardModel: NSObject, NSCopying {
     private func createEmptyPieceAtLocation(location: CGPoint) -> PieceModel
     {
         return PieceModel(type: EMPTY, color: EMPTY, location: location)
+    }
+    
+    func printBoard()
+    {
+        var str = ""
+        let keys = self.board.allKeys as! [String]
+        let sortedArray = keys.sorted { $0.localizedCaseInsensitiveCompare($1) == ComparisonResult.orderedAscending }
+        var arr = [String]()
+        var masterArr = [[String]]()
+        var count = 0
+        for key in sortedArray {
+            let piece = self.board[key] as! PieceModel
+            var st = piece.type
+            let t = (piece.color == WHITE) ? "W" : "B"
+            if piece.type != EMPTY { st += " (" + t + ")" }
+            st = st.padding(toLength: 13, withPad: " ", startingAt: 0)
+            arr.append(st)
+            count += 1
+            
+            if count == BOARD_DIMENSIONS {
+                masterArr.append(arr)
+                arr.removeAll()
+                count = 0
+            }
+        }
+        
+        for r in 0..<BOARD_DIMENSIONS {
+            var a = [String]()
+            for c in 0..<BOARD_DIMENSIONS {
+                a.append(masterArr[c][r])
+            }
+            print(a)
+            str += a.description
+        }
     }
 }
