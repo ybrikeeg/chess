@@ -40,9 +40,18 @@ class BoardModel: NSObject, NSCopying {
             for c in 0..<BOARD_DIMENSIONS {
                 var piece:PieceModel? = nil
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
-                    piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+//                    if PIECE_ORDER[c] == KNIGHT || PIECE_ORDER[c] == KING {
+                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+//                    } else {
+//                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
+//                    }
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-                    piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
+//                    if abs(c) < 2 {
+                        piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
+//                    } else {
+//                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
+//                    }
+                    
                 } else {
                     piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
                 }
@@ -129,19 +138,19 @@ class BoardModel: NSObject, NSCopying {
     func getBoardScoringHeuristic() -> Float
     {
         //assume computer is black
-        var whitePieceTotal = 0
-        var blackPieceTotal = 0
-        var whiteLocationTotal = 0
-        var blackLocationTotal = 0
+        var whitePieceTotal:Float = 0.0
+        var blackPieceTotal:Float = 0.0
+        var whiteLocationTotal:Float = 0.0
+        var blackLocationTotal:Float = 0.0
         
         for r in 0..<BOARD_DIMENSIONS {
             for c in 0..<BOARD_DIMENSIONS {
                 if let piece = getPieceAtLocation(location: CGPoint(x: r, y: c)) {
                     if piece.color == WHITE {
-                        whiteLocationTotal += HEAT_MAP_WHITE[Int(piece.location.y)][Int(piece.location.x)]
+                        whiteLocationTotal += piece.getLocationScore()
                         whitePieceTotal += piece.value
                     } else if piece.color == BLACK {
-                        blackLocationTotal += HEAT_MAP_BLACK[Int(piece.location.y)][Int(piece.location.x)]
+                        blackLocationTotal += piece.getLocationScore()
                         blackPieceTotal += piece.value
                     }
                 }
@@ -204,10 +213,9 @@ class BoardModel: NSObject, NSCopying {
             //make sure
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
-            } else {
-                
             }
-            return playerIsInCheck(player: player)
+            
+            return playerIsInCheck(player: player)// && isKingAndInCheck
         }
         return true
     }
@@ -218,6 +226,7 @@ class BoardModel: NSObject, NSCopying {
     func playerIsInCheck(player: String) -> Bool
     {
         let king = getKingForPlayer(player: player)
+        //assert(king == nil, "Could not find king")
         //get queen + knight moves from opponents king
         let superkingMoves = king?.getSuperKingmoves(board: self)
         
@@ -228,25 +237,24 @@ class BoardModel: NSObject, NSCopying {
                 if piece.type != EMPTY { checkCandidates.append(piece) }
             }
         }
+
         for candidate in checkCandidates {
             //the piece just moved is in the king's super-view. Determine if this piece is of the appropriate type to check him
-            if let pieceInQuestionToCheck = getPieceAtLocation(location: candidate.location) {
-                let diff = CGPoint(x: candidate.location.x - (king?.location.x)!, y: candidate.location.y - (king?.location.y)!)
-                //diagonal
-                if abs(diff.x) == abs(diff.y) {
-                    //queen or bishop
-                    if pieceInQuestionToCheck.type == QUEEN || pieceInQuestionToCheck.type == BISHOP { return true }
-                    //pawn
-                    let direction = (king?.color == BLACK) ? -1 : 1
-                    if pieceInQuestionToCheck.type == PAWN && Int(diff.x) == direction { return true }
-                }
-                    //on a file
-                else if diff.x * diff.y == 0 {
-                    if pieceInQuestionToCheck.type == QUEEN || pieceInQuestionToCheck.type == ROOK { return true }
-                }
-                    //knight
-                else if (abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1) { return pieceInQuestionToCheck.type == KNIGHT }
+            let diff = CGPoint(x: candidate.location.x - (king?.location.x)!, y: candidate.location.y - (king?.location.y)!)
+            //diagonal
+            if abs(diff.x) == abs(diff.y) {
+                //queen or bishop
+                if candidate.type == QUEEN || candidate.type == BISHOP { return true }
+                //pawn
+                let direction = (king?.color == BLACK) ? 1 : -1
+                if candidate.type == PAWN && Int(diff.y) == direction { return true }
             }
+                //on a file
+            else if diff.x * diff.y == 0 {
+                if candidate.type == QUEEN || candidate.type == ROOK { return true }
+            }
+                //knight
+            else if (abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1) { return candidate.type == KNIGHT }
         }
         return false
     }
@@ -313,12 +321,10 @@ class BoardModel: NSObject, NSCopying {
         } else if originalPiece.type == KING && ((replacedPiece?.location.x)! - originalPiece.location.x == -2) {
             isCastle = QUEEN_SIDE_CASTLE
         }
-        
         //move piece
         if movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle) {
             isValidMove = false
         }
-        
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace, isCastle: isCastle)
         return isValidMove
@@ -331,7 +337,8 @@ class BoardModel: NSObject, NSCopying {
     {
         if let piece = getPieceAtLocation(location: location) {
             if piece.color != forPlayer { return [] }
-            var validMoves = piece.getValidMoves(board: self)
+            let inCheck = playerIsInCheck(player: forPlayer)
+            var validMoves = piece.getValidMoves(board: self, inCheck: inCheck)
             let originalPiece = piece.copy() as! PieceModel
             
             for move in validMoves {
@@ -372,4 +379,8 @@ class BoardModel: NSObject, NSCopying {
         return nil
     }
     
+    private func createEmptyPieceAtLocation(location: CGPoint) -> PieceModel
+    {
+        return PieceModel(type: EMPTY, color: EMPTY, location: location)
+    }
 }

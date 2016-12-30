@@ -14,7 +14,7 @@ class PieceModel: NSObject, NSCopying {
     var location: CGPoint = CGPoint.zero
     var color: String = ""
     var isAtStartingPosition = false
-    var value = -1
+    var value: Float = -1.0
     var id = 0
     
     init(type: String, color: String, location: CGPoint, starting: Bool = true, id: Int = -1)
@@ -25,17 +25,17 @@ class PieceModel: NSObject, NSCopying {
         self.color = color
         self.isAtStartingPosition = starting
         if type == PAWN {
-            self.value = 1
-        } else if type == ROOK {
-            self.value = 5
-        } else if type == KNIGHT {
-            self.value = 3
-        } else if type == BISHOP {
-            self.value = 3
-        } else if type == QUEEN {
-            self.value = 9
-        } else if type == KING {
             self.value = 100
+        } else if type == ROOK {
+            self.value = 500
+        } else if type == KNIGHT {
+            self.value = 320
+        } else if type == BISHOP {
+            self.value = 330
+        } else if type == QUEEN {
+            self.value = 900
+        } else if type == KING {
+            self.value = 20000
         }
         if type != EMPTY {
             self.id = Int(location.x + 1 + location.y * 8)
@@ -50,7 +50,31 @@ class PieceModel: NSObject, NSCopying {
         return copy
     }
     
-    func getValidMoves(board: BoardModel) -> [CGPoint]
+    func getLocationScore() -> Float
+    {
+        var x:Int = Int(self.location.x)
+        var y:Int = Int(self.location.y)
+        if self.color == BLACK {
+            //invert matrix
+            x = 7 - x
+            y = 7 - y
+        }
+        if self.type == PAWN {
+            return Float(PAWN_LOCATIONS[y][x])
+        } else if self.type == BISHOP {
+            return Float(BISHOP_LOCATIONS[y][x])
+        } else if self.type == KNIGHT {
+            return Float(KNIGHT_LOCATIONS[y][x])
+        } else if self.type == ROOK {
+            return Float(ROOK_LOCATIONS[y][x])
+        } else if self.type == QUEEN {
+            return Float(QUEEN_LOCATIONS[y][x])
+        }
+        //for king
+        return 0.0
+    }
+    
+    func getValidMoves(board: BoardModel, inCheck: Bool = false) -> [CGPoint]
     {
         var moves = [CGPoint]()
         if self.type == PAWN {
@@ -86,7 +110,7 @@ class PieceModel: NSObject, NSCopying {
         } else if self.type == KING {
             moves.append(contentsOf: getMoves(type: neighbors, board: board, singleIter: true))
             //check for castle
-            if self.isAtStartingPosition {
+            if self.isAtStartingPosition && !inCheck{
                 //check king side
                 let emptyBishop = board.getPieceAtLocation(location: CGPoint(x: self.location.x + 1, y: self.location.y))
                 let emptyKnight = board.getPieceAtLocation(location: CGPoint(x: self.location.x + 2, y: self.location.y))
