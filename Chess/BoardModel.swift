@@ -216,15 +216,15 @@ class BoardModel: NSObject, NSCopying {
                 //pawn
                 let direction = (king?.color == BLACK) ? 1 : -1
                 if candidate.type == PAWN && Int(diff.y) == direction { return true }
-                if abs(diff.x) == 1 && abs(diff.y) == 1 { return candidate.type == KING }
+                if (abs(diff.x) == 1 && abs(diff.y) == 1) && candidate.type == KING { return true }
             }
-                //on a file
+            //on a file
             else if diff.x * diff.y == 0 {
                 if candidate.type == QUEEN || candidate.type == ROOK { return true }
-                if abs(diff.x) + abs(diff.y) == 1 { return candidate.type == KING }
+                if (abs(diff.x) + abs(diff.y) == 1) && candidate.type == KING { return true }
             }
-                //knight
-            else if (abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1) { return candidate.type == KNIGHT }
+            //knight
+            else if candidate.type == KNIGHT && ((abs(diff.x) == 1 && abs(diff.y) == 2) || (abs(diff.x) == 2 && abs(diff.y) == 1)) { return true }
         }
         return false
     }
