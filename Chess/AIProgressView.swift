@@ -35,6 +35,7 @@ class AIProgressView: UIView {
     {
         updateProgress(progress: 0.0)
     }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

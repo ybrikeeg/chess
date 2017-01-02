@@ -10,7 +10,7 @@ import UIKit
 
 class ChessViewController: UIViewController {
     
-    var gamemode = GameplayMode.HumanVAI
+    var gamemode = GameplayMode.AIvAI
     
     var boardView = BoardView()
     var boardModel = BoardModel()
@@ -44,7 +44,7 @@ class ChessViewController: UIViewController {
     var lastTouchLocation: CGPoint? = nil
     
     var iterCount = 0
-    let DEPTH = 3
+    let DEPTH = 2
     let MAX_ITER_COUNT:Float = 10000.0
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
@@ -54,7 +54,8 @@ class ChessViewController: UIViewController {
                 self.progressView.updateProgress(progress: Float(self.iterCount) / self.MAX_ITER_COUNT)
             }
         }
-        if depth == 0 {
+
+        if depth == 0 || iterCount > Int(MAX_ITER_COUNT) {
             return (node.getBoardScoringHeuristic(), (CGPoint.zero, CGPoint.zero))
         }
         
@@ -124,7 +125,7 @@ class ChessViewController: UIViewController {
                     self.boardModelCopy = self.boardModel.copy() as! BoardModel
                     
                     DispatchQueue.main.async {
-                        self.progressView.updateProgress(progress: 0.0)
+                        self.progressView.reset()
                     }
                 } else {
                     return
