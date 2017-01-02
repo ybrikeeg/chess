@@ -61,7 +61,7 @@ class TileView: UIView {
         showBorder(value: value, color: UIColor.red)
     }
     
-    func inCheckMate(value: Bool)
+    func inCheckmate(value: Bool)
     {
         self.highlighted = false
         showBorder(value: value, color: UIColor.red, width: 4.0)
