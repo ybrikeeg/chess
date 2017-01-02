@@ -11,11 +11,14 @@ import UIKit
 class ChessViewController: UIViewController {
     
     var gamemode = GameplayMode.HumanVAI
+    
     var boardView = BoardView()
     var boardModel = BoardModel()
+    var boardModelCopy = BoardModel()
     var blackCaptureCase = CaptureView()
     var whiteCaptureCase = CaptureView()
     var humanCanMove = true
+    
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -29,7 +32,8 @@ class ChessViewController: UIViewController {
         super.viewDidAppear(animated)
         createBoard()
         boardView.drawPieces(board: boardModel)
-        
+        boardModelCopy = boardModel.copy() as! BoardModel
+
         if gamemode == .AIvAI {
             computerMove()
         }
@@ -60,18 +64,16 @@ class ChessViewController: UIViewController {
             }
         }
         
-        let originalBoardCopy = node.copy() as! BoardModel
         var alpha = alpha
         var beta = beta
         if maximizingPlayer == BLACK {
             var bestValue = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
-                let boardCopy = originalBoardCopy.copy() as! BoardModel
-                let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
-                let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardCopy.movePiece(from: move.0, to: move.1, isSimulation: true)
-                let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
-                boardCopy.unmovePiece(original: p1, replacement: p2)
+                let p1 = boardModel.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
+                let p2 = boardModel.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
+                _ = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
+                let recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
+                boardModel.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0{
                     bestValue = (recurse.0, move)
                 }
@@ -82,12 +84,11 @@ class ChessViewController: UIViewController {
         } else {
             var bestValue = (Float.infinity, (CGPoint.zero, CGPoint.zero))
             for move in allMoves {
-                let boardCopy = originalBoardCopy.copy() as! BoardModel
-                let p1 = boardCopy.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
-                let p2 = boardCopy.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardCopy.movePiece(from: move.0, to: move.1, isSimulation: true)
-                let recurse = minimax(node: boardCopy, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
-                boardCopy.unmovePiece(original: p1, replacement: p2)
+                let p1 = boardModel.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
+                let p2 = boardModel.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
+                _ = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
+                let recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
+                boardModel.unmovePiece(original: p1, replacement: p2)
                 if bestValue.0 > recurse.0 {
                     bestValue = (recurse.0, move)
                 }
@@ -103,18 +104,14 @@ class ChessViewController: UIViewController {
         humanCanMove = false
         DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
             DispatchQueue.global(qos: .background).async {
-                if self.playerTurn == BLACK {
-                    let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
+                if self.playerTurn != GAME_OVER {
+                    let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: self.playerTurn)
                     print("Final value is \(bestMove) after \(self.iterCount) iterations")
                     self.iterCount = 0
                     self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
                     self.humanCanMove = true
-                } else if self.playerTurn == WHITE {
-                    let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: WHITE)
-                    print("Final value is \(bestMove) after \(self.iterCount) iterations")
-                    self.iterCount = 0
-                    self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
-                    self.humanCanMove = true
+                    self.boardModelCopy = self.boardModel.copy() as! BoardModel
+
                 } else {
                     return
                 }
@@ -172,7 +169,6 @@ class ChessViewController: UIViewController {
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
     {
-        print("tap")
         if gamemode != .AIvAI {
             let touchPoint = gestureRecognizer.location(in: boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
@@ -182,16 +178,16 @@ class ChessViewController: UIViewController {
                 lastTouchLocation = nil
                 print("Board score is \(boardModel.getBoardScoringHeuristic())")
                 if gamemode == .HumanVAI {
+                    boardModelCopy = boardModel.copy() as! BoardModel
                     computerMove()
                 }
             } else {
                 print("drawing \(playerTurn)")
                 lastTouchLocation = gridLocation
-                var drawForPlayer = WHITE
-                if gamemode == .HumanVHuman {
-                    drawForPlayer = playerTurn
-                }
-                boardView.shadeCheckers(location: gridLocation, forPlayer: drawForPlayer, board: boardModel)
+                let drawForPlayer = (gamemode == .HumanVHuman) ? playerTurn : WHITE
+                let boardToUse = (humanCanMove) ? boardModel : boardModelCopy
+                boardView.shadeCheckers(location: gridLocation, forPlayer: drawForPlayer, board: boardToUse)
+                if !humanCanMove { lastTouchLocation = nil }
             }
         }
     }
