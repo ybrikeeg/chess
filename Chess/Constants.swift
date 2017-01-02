@@ -37,6 +37,11 @@ struct MoveResult {
     var checkType: CheckType
 }
 
+enum GameplayMode {
+    case HumanVHuman
+    case HumanVAI
+    case AIvAI
+}
 func convertCGPointToKey(location: CGPoint) -> String
 {
     let newPoint = CGPoint(x: Int(location.x), y: Int(location.y))

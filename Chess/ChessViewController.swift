@@ -10,6 +10,7 @@ import UIKit
 
 class ChessViewController: UIViewController {
 
+    var gamemode = GameplayMode.HumanVAI
     var boardView = BoardView()
     var boardModel = BoardModel()
     var blackCaptureCase = CaptureView()
@@ -28,6 +29,10 @@ class ChessViewController: UIViewController {
         super.viewDidAppear(animated)
         createBoard()
         boardView.drawPieces(board: self.boardModel)
+        
+        if gamemode == .AIvAI {
+            computerMove()
+        }
     }
     
     var playerTurn = WHITE
@@ -35,7 +40,7 @@ class ChessViewController: UIViewController {
     var lastTouchLocation: CGPoint? = nil
     
     var iterCount = 0
-    let DEPTH = 3
+    let DEPTH = 2
     
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
@@ -101,6 +106,20 @@ class ChessViewController: UIViewController {
             print("Final value is \(bestMove) after \(self.iterCount) iterations")
             self.iterCount = 0
             self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+        } else if playerTurn == WHITE {
+            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: WHITE)
+            print("Final value is \(bestMove) after \(self.iterCount) iterations")
+            self.iterCount = 0
+            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+        } else {
+            return
+        }
+        
+        if gamemode == .AIvAI {
+            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+                print("computer make a move")
+                self.computerMove()
+            }
         }
     }
     
@@ -126,41 +145,47 @@ class ChessViewController: UIViewController {
             }
         }
     }
+    
     func movePiece(from: CGPoint, to: CGPoint)
     {
         let before = simplifyBoard()
         let moveResult = self.boardModel.movePiece(from: from, to: to)
         let after = simplifyBoard()
         
-        if moveResult.checkType == .Checkmate {
-            playerTurn = GAME_OVER
-        } else {
-            playerTurn = (self.playerTurn == WHITE) ? BLACK : WHITE
-        }
+        playerTurn = (self.playerTurn == WHITE) ? BLACK : WHITE
         
         self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: playerTurn, board: self.boardModel)
         updateCaptureCases(moveResult: moveResult)
-
+        
+        if moveResult.checkType == .Checkmate {
+            print("CHECKMATE")
+            playerTurn = GAME_OVER
+        }
+        
         self.boardModel.printBoard()
     }
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
     {
-        if playerTurn == human {
-            let touchPoint = gestureRecognizer.location(in: self.boardView)
-            let gridLocation = boardView.tapAtLocation(tap: touchPoint)
-            //check if gridLocation is highlighted
-            if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) {
-                movePiece(from: lastTouchLocation!, to: gridLocation)
-                lastTouchLocation = nil
-                print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
-                    print("computer make a move")
-                    self.computerMove()
+        if gamemode != .AIvAI {
+            if playerTurn == human {
+                let touchPoint = gestureRecognizer.location(in: self.boardView)
+                let gridLocation = boardView.tapAtLocation(tap: touchPoint)
+                //check if gridLocation is highlighted
+                if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) {
+                    movePiece(from: lastTouchLocation!, to: gridLocation)
+                    lastTouchLocation = nil
+                    print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
+                    if gamemode == .HumanVAI {
+                        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+                            print("computer make a move")
+                            self.computerMove()
+                        }
+                    }
+                } else {
+                    lastTouchLocation = gridLocation
+                    self.boardView.shadeCheckers(location: gridLocation, forPlayer: playerTurn, board: boardModel)
                 }
-            } else {
-                lastTouchLocation = gridLocation
-                self.boardView.shadeCheckers(location: gridLocation, forPlayer: playerTurn, board: boardModel)
             }
         }
     }
