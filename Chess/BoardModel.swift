@@ -15,15 +15,6 @@ class BoardModel: NSObject, NSCopying {
     let KING_SIDE_CASTLE = 1
     let QUEEN_SIDE_CASTLE = 2
     
-    init(_ model: BoardModel) {
-        for (key, piece) in model.board {
-            if let key = key as? String, let piece = piece as? PieceModel {
-                board.setValue(piece.copy(), forKey: key)
-            }
-        }
-//        self.board = model.board
-    }
-    
     init(board: NSMutableDictionary)
     {
         super.init()
@@ -33,7 +24,6 @@ class BoardModel: NSObject, NSCopying {
                 self.board.setValue(piece.copy(), forKey: key)
             }
         }
-//        self.board = board
         return
     }
     

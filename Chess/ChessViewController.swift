@@ -99,6 +99,12 @@ class ChessViewController: UIViewController {
         }
     }
     
+    private func hapticFeedback(style: UIImpactFeedbackStyle)
+    {
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.impactOccurred()
+    }
+    
     private func computerMove()
     {
         humanCanMove = false
@@ -154,8 +160,9 @@ class ChessViewController: UIViewController {
         let after = simplifyBoard()
         
         playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
-        
+
         DispatchQueue.main.async {
+            self.hapticFeedback(style: (moveResult.pieceCapture == EMPTY) ? .light : .heavy)
             self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: self.playerTurn, board: self.boardModel)
             self.updateCaptureCases(moveResult: moveResult)
         }
@@ -174,6 +181,7 @@ class ChessViewController: UIViewController {
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
             //check if gridLocation is highlighted
             if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) && (gamemode == .HumanVAI && humanCanMove) {
+                hapticFeedback(style: .medium)
                 movePiece(from: lastTouchLocation!, to: gridLocation)
                 lastTouchLocation = nil
                 print("Board score is \(boardModel.getBoardScoringHeuristic())")
@@ -184,6 +192,7 @@ class ChessViewController: UIViewController {
             } else {
                 print("drawing \(playerTurn)")
                 lastTouchLocation = gridLocation
+                hapticFeedback(style: .light)
                 let drawForPlayer = (gamemode == .HumanVHuman) ? playerTurn : WHITE
                 let boardToUse = (humanCanMove) ? boardModel : boardModelCopy
                 boardView.shadeCheckers(location: gridLocation, forPlayer: drawForPlayer, board: boardToUse)
