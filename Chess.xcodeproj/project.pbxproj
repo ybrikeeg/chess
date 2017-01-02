@@ -18,6 +18,7 @@
 		42417E431E067BF7004DD251 /* BoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E421E067BF7004DD251 /* BoardModel.swift */; };
 		42417E451E068AA3004DD251 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E441E068AA3004DD251 /* TileView.swift */; };
 		42417E471E0743A6004DD251 /* PieceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E461E0743A6004DD251 /* PieceModel.swift */; };
+		426BFC201E1A2373005FE57C /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426BFC1F1E1A2373005FE57C /* CaptureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		42417E421E067BF7004DD251 /* BoardModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardModel.swift; sourceTree = "<group>"; };
 		42417E441E068AA3004DD251 /* TileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		42417E461E0743A6004DD251 /* PieceModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PieceModel.swift; sourceTree = "<group>"; };
+		426BFC1F1E1A2373005FE57C /* CaptureView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +84,7 @@
 			isa = PBXGroup;
 			children = (
 				42417E341E065AAF004DD251 /* BoardView.swift */,
+				426BFC1F1E1A2373005FE57C /* CaptureView.swift */,
 				42417E3B1E066572004DD251 /* PieceView.swift */,
 				42417E441E068AA3004DD251 /* TileView.swift */,
 			);
@@ -189,6 +192,7 @@
 			files = (
 				42417E431E067BF7004DD251 /* BoardModel.swift in Sources */,
 				42417E451E068AA3004DD251 /* TileView.swift in Sources */,
+				426BFC201E1A2373005FE57C /* CaptureView.swift in Sources */,
 				42417E471E0743A6004DD251 /* PieceModel.swift in Sources */,
 				42417E3C1E066572004DD251 /* PieceView.swift in Sources */,
 				42417E351E065AAF004DD251 /* BoardView.swift in Sources */,

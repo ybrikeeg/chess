@@ -12,7 +12,9 @@ class ChessViewController: UIViewController {
 
     var boardView = BoardView()
     var boardModel = BoardModel()
-    
+    var blackCaptureCase = CaptureView()
+    var whiteCaptureCase = CaptureView()
+
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -112,22 +114,33 @@ class ChessViewController: UIViewController {
         return simple
     }
     
+    private func updateCaptureCases(moveResult: MoveResult)
+    {
+        if playerTurn == BLACK {
+            if moveResult.pieceCapture != EMPTY {
+                whiteCaptureCase.addPiece(piece: moveResult.pieceCapture)
+            }
+        } else if playerTurn == WHITE {
+            if moveResult.pieceCapture != EMPTY {
+                blackCaptureCase.addPiece(piece: moveResult.pieceCapture)
+            }
+        }
+    }
     func movePiece(from: CGPoint, to: CGPoint)
     {
         let before = simplifyBoard()
         let moveResult = self.boardModel.movePiece(from: from, to: to)
-
         let after = simplifyBoard()
-        let playerInCheck = (self.playerTurn == WHITE) ? BLACK : WHITE
         
-//        let isCheckMate = self.boardModel.isCheckMate(player: playerInCheck)
         if moveResult.checkType == .Checkmate {
             playerTurn = GAME_OVER
         } else {
-            playerTurn = playerInCheck
+            playerTurn = (self.playerTurn == WHITE) ? BLACK : WHITE
         }
         
-        self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: playerInCheck, board: self.boardModel)
+        self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: playerTurn, board: self.boardModel)
+        updateCaptureCases(moveResult: moveResult)
+
         self.boardModel.printBoard()
     }
     
@@ -147,22 +160,7 @@ class ChessViewController: UIViewController {
                 }
             } else {
                 lastTouchLocation = gridLocation
-                let moves = boardModel.getValidMovesAtLocation(location: gridLocation, forPlayer: playerTurn)
-                var detailedMoves = [(CGPoint, Bool)]()
-                for move in moves {
-                    var added = false
-                    if let piece = self.boardModel.getPieceAtLocation(location: move) {
-                        if piece.type != EMPTY && piece.color != human {
-                            detailedMoves.append((move, true))
-                            added = true
-                        }
-                    }
-                    if !added {
-                        detailedMoves.append((move, false))
-                    }
-                }
-                if moves.count == 0 { lastTouchLocation = nil }
-                self.boardView.shadeCheckers(shadeChecker: detailedMoves)
+                self.boardView.shadeCheckers(location: gridLocation, forPlayer: playerTurn, board: boardModel)
             }
         }
     }
@@ -174,5 +172,11 @@ class ChessViewController: UIViewController {
         let height = self.view.frame.size.height
         boardView = BoardView(frame: CGRect(x: 0, y: height/2 - width/2, width: width, height: width))
         self.view.addSubview(boardView)
+        
+        let captureHeight = width / 15
+        self.blackCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y - captureHeight, width: width, height: captureHeight), color: BLACK)
+        self.view.addSubview(self.blackCaptureCase)
+        self.whiteCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y + boardView.frame.size.height, width: width, height: captureHeight), color: WHITE)
+        self.view.addSubview(self.whiteCaptureCase)
     }
 }

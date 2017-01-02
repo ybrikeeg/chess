@@ -40,19 +40,19 @@ class BoardModel: NSObject, NSCopying {
             for c in 0..<BOARD_DIMENSIONS {
                 var piece:PieceModel? = nil
                 if r == 0 || r == BOARD_DIMENSIONS - 1 {
-//                    piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
-                    if PIECE_ORDER[c] == KING {
-                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
-                    } else {
-                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
-                    }
+                    piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+//                    if PIECE_ORDER[c] == KING {
+//                        piece = PieceModel(type:PIECE_ORDER[c], color: color, location: CGPoint(x: c, y: r))
+//                    } else {
+//                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
+//                    }
                 } else if r == 1 || r == BOARD_DIMENSIONS - 2 {
-//                    piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
-                    if abs(c) < 2 && color == WHITE {
-                        piece = PieceModel(type:QUEEN, color: color, location: CGPoint(x: c, y: r))
-                    } else {
-                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
-                    }
+                    piece = PieceModel(type: PAWN,  color: color, location: CGPoint(x: c, y: r))
+//                    if abs(c) < 2 && color == WHITE {
+//                        piece = PieceModel(type:QUEEN, color: color, location: CGPoint(x: c, y: r))
+//                    } else {
+//                        piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
+//                    }
                 } else {
                     piece = createEmptyPieceAtLocation(location: CGPoint(x: c, y: r))
                 }

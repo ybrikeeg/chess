@@ -129,7 +129,8 @@ class BoardView: UIView {
             }
         }
         
-        shadeCheckers(shadeChecker: [])
+        shadeCheckers(location: CGPoint(x: -1, y: -1), forPlayer: EMPTY, board: board)
+        
         if moveResult.checkType == .Check || moveResult.checkType == .Checkmate {
             if let king = board.getKingForPlayer(player: player) {
                 if let loc = getCheckerAtLocation(location: king.location) {
@@ -166,15 +167,29 @@ class BoardView: UIView {
         }
     }
     
-    
     /**
-     * Given an array of position, show the dot for the corresponding tile
+     * Given the touch location and player, show animate the tiles that the piece can move to
      */
-    func shadeCheckers(shadeChecker: [(CGPoint, Bool)])
+    func shadeCheckers(location: CGPoint, forPlayer: String, board: BoardModel)
     {
+        let moves = board.getValidMovesAtLocation(location: location, forPlayer: forPlayer)
+        var detailedMoves = [(CGPoint, Bool)]()
+        for move in moves {
+            var added = false
+            if let piece = board.getPieceAtLocation(location: move) {
+                if piece.type != EMPTY && piece.color != forPlayer {
+                    detailedMoves.append((move, true))
+                    added = true
+                }
+            }
+            if !added {
+                detailedMoves.append((move, false))
+            }
+        }
+        
         //if bool is true, then the tile contains a piece and should be shaded differently
         var toShade = [(TileView, Bool)]()
-        for shade in shadeChecker {
+        for shade in detailedMoves {
             for checker in checkers {
                 if checker.position == shade.0 {
                     toShade.append((checker.view, shade.1))
