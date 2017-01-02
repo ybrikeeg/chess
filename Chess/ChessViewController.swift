@@ -15,7 +15,7 @@ class ChessViewController: UIViewController {
     var boardModel = BoardModel()
     var blackCaptureCase = CaptureView()
     var whiteCaptureCase = CaptureView()
-    
+    var humanCanMove = true
     override func viewDidLoad()
     {
         super.viewDidLoad()
@@ -28,7 +28,7 @@ class ChessViewController: UIViewController {
     {
         super.viewDidAppear(animated)
         createBoard()
-        boardView.drawPieces(board: self.boardModel)
+        boardView.drawPieces(board: boardModel)
         
         if gamemode == .AIvAI {
             computerMove()
@@ -100,24 +100,29 @@ class ChessViewController: UIViewController {
     
     private func computerMove()
     {
-        if playerTurn == BLACK {
-            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
-            print("Final value is \(bestMove) after \(self.iterCount) iterations")
-            self.iterCount = 0
-            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
-        } else if playerTurn == WHITE {
-            let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: WHITE)
-            print("Final value is \(bestMove) after \(self.iterCount) iterations")
-            self.iterCount = 0
-            self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
-        } else {
-            return
-        }
-        
-        if gamemode == .AIvAI {
-            DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
-                print("computer make a move")
-                self.computerMove()
+        humanCanMove = false
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
+            DispatchQueue.global(qos: .background).async {
+                if self.playerTurn == BLACK {
+                    let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: BLACK)
+                    print("Final value is \(bestMove) after \(self.iterCount) iterations")
+                    self.iterCount = 0
+                    self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+                    self.humanCanMove = true
+                } else if self.playerTurn == WHITE {
+                    let bestMove = self.minimax(node: self.boardModel, depth: self.DEPTH, alpha: Float.infinity * -1.0, beta: Float.infinity, maximizingPlayer: WHITE)
+                    print("Final value is \(bestMove) after \(self.iterCount) iterations")
+                    self.iterCount = 0
+                    self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
+                    self.humanCanMove = true
+                } else {
+                    return
+                }
+                
+                if self.gamemode == .AIvAI {
+                    print("computer make a move")
+                    self.computerMove()
+                }
             }
         }
     }
@@ -125,7 +130,7 @@ class ChessViewController: UIViewController {
     private func simplifyBoard() -> NSDictionary
     {
         let simple = NSMutableDictionary()
-        for (key, value) in self.boardModel.board {
+        for (key, value) in boardModel.board {
             let piece = value as! PieceModel
             simple.setValue(piece.id, forKey: key as! String)
         }
@@ -148,43 +153,46 @@ class ChessViewController: UIViewController {
     func movePiece(from: CGPoint, to: CGPoint)
     {
         let before = simplifyBoard()
-        let moveResult = self.boardModel.movePiece(from: from, to: to)
+        let moveResult = boardModel.movePiece(from: from, to: to)
         let after = simplifyBoard()
         
-        playerTurn = (self.playerTurn == WHITE) ? BLACK : WHITE
+        playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
         
-        self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: playerTurn, board: self.boardModel)
-        updateCaptureCases(moveResult: moveResult)
-        
+        DispatchQueue.main.async {
+            self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: self.playerTurn, board: self.boardModel)
+            self.updateCaptureCases(moveResult: moveResult)
+        }
         if moveResult.checkType == .Checkmate {
             print("CHECKMATE")
             playerTurn = GAME_OVER
         }
         
-        self.boardModel.printBoard()
+        boardModel.printBoard()
     }
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
     {
+        print("tap")
         if gamemode != .AIvAI {
-            let touchPoint = gestureRecognizer.location(in: self.boardView)
+            let touchPoint = gestureRecognizer.location(in: boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
             //check if gridLocation is highlighted
-            if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) {
+            if lastTouchLocation != nil && boardView.locationIsHighlighted(location: gridLocation) && (gamemode == .HumanVAI && humanCanMove) {
                 movePiece(from: lastTouchLocation!, to: gridLocation)
                 lastTouchLocation = nil
-                print("Board score is \(self.boardModel.getBoardScoringHeuristic())")
+                print("Board score is \(boardModel.getBoardScoringHeuristic())")
                 if gamemode == .HumanVAI {
-                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.5) {
-                        print("computer make a move")
-                        self.computerMove()
-                    }
+                    computerMove()
                 }
             } else {
+                print("drawing \(playerTurn)")
                 lastTouchLocation = gridLocation
-                self.boardView.shadeCheckers(location: gridLocation, forPlayer: playerTurn, board: boardModel)
+                var drawForPlayer = WHITE
+                if gamemode == .HumanVHuman {
+                    drawForPlayer = playerTurn
+                }
+                boardView.shadeCheckers(location: gridLocation, forPlayer: drawForPlayer, board: boardModel)
             }
-            
         }
     }
     
@@ -197,9 +205,9 @@ class ChessViewController: UIViewController {
         self.view.addSubview(boardView)
         
         let captureHeight = width / 15
-        self.blackCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y - captureHeight, width: width, height: captureHeight), color: BLACK)
-        self.view.addSubview(self.blackCaptureCase)
-        self.whiteCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y + boardView.frame.size.height, width: width, height: captureHeight), color: WHITE)
-        self.view.addSubview(self.whiteCaptureCase)
+        blackCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y - captureHeight, width: width, height: captureHeight), color: BLACK)
+        self.view.addSubview(blackCaptureCase)
+        whiteCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y + boardView.frame.size.height, width: width, height: captureHeight), color: WHITE)
+        self.view.addSubview(whiteCaptureCase)
     }
 }
