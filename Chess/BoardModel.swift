@@ -374,7 +374,7 @@ class BoardModel: NSObject, NSCopying {
             let piece = self.board[key] as! PieceModel
             var st = piece.type
             let t = (piece.color == WHITE) ? "W" : "B"
-            if piece.type != EMPTY { st += " (" + t + ")" }
+            if piece.type != EMPTY { st += " (" + t + "\(piece.id)" + ")" }
             st = st.padding(toLength: 13, withPad: " ", startingAt: 0)
             arr.append(st)
             count += 1

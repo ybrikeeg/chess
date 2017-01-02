@@ -127,7 +127,7 @@ class ChessViewController: UIViewController {
             playerTurn = playerInCheck
         }
         
-        self.boardView.updateView(before: before, after: after, inCheck: moveResult.checkType == .Check, inCheckMate: moveResult.checkType == .Checkmate, player: playerInCheck, board: self.boardModel)
+        self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: playerInCheck, board: self.boardModel)
         self.boardModel.printBoard()
     }
     

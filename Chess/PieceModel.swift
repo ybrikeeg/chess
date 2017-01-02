@@ -37,10 +37,14 @@ class PieceModel: NSObject, NSCopying {
         } else if type == KING {
             self.value = 20000
         }
-        if type != EMPTY {
-            self.id = Int(location.x + 1 + location.y * 8)
+        if self.isAtStartingPosition {
+            if type != EMPTY {
+                self.id = Int(location.x + 1 + location.y * 8)
+            } else {
+                self.id = -1
+            }
         } else {
-            self.id = -1
+            self.id = id
         }
         return
     }

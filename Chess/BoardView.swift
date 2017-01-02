@@ -86,7 +86,7 @@ class BoardView: UIView {
         return nil
     }
     
-    func updateView(before: NSDictionary, after: NSDictionary, inCheck: Bool,inCheckMate: Bool, player: String, board: BoardModel)
+    func updateView(before: NSDictionary, after: NSDictionary, moveResult: MoveResult, player: String, board: BoardModel)
     {
         var viewsToUpdate = [(PieceView, CGPoint)]()
         var viewsToRemove = [PieceView]()
@@ -118,7 +118,7 @@ class BoardView: UIView {
             }
         }
         
-        if !inCheckMate {
+        if moveResult.checkType != .Checkmate {
             for viewToRemove in viewsToRemove {
                 UIView.animate(withDuration: 0.2, animations: {
                     viewToRemove.alpha = 0.0
@@ -130,18 +130,18 @@ class BoardView: UIView {
         }
         
         shadeCheckers(shadeChecker: [])
-        if inCheck || inCheckMate {
+        if moveResult.checkType == .Check || moveResult.checkType == .Checkmate {
             if let king = board.getKingForPlayer(player: player) {
                 if let loc = getCheckerAtLocation(location: king.location) {
-                    if inCheckMate { loc.inCheckMate(value: true) }
-                    else if inCheck { loc.inCheck(value: true) }
+                    if moveResult.checkType == .Checkmate { loc.inCheckmate(value: true) }
+                    else if moveResult.checkType == .Check { loc.inCheck(value: true) }
                 }
             }
         } else {
             if let king = board.getKingForPlayer(player: player) {
                 if let loc = getCheckerAtLocation(location: king.location) {
                     loc.inCheck(value: false)
-                    loc.inCheckMate(value: false)
+                    loc.inCheckmate(value: false)
                 }
             }
         }
