@@ -115,7 +115,9 @@ class ChessViewController: UIViewController {
     func movePiece(from: CGPoint, to: CGPoint)
     {
         let before = simplifyBoard()
-        let inCheck = self.boardModel.movePiece(from: from, to: to)
+        let moveResult = self.boardModel.movePiece(from: from, to: to)
+//        let inCheck = self.boardModel.movePiece(from: from, to: to)
+
         let after = simplifyBoard()
         let playerInCheck = (self.playerTurn == WHITE) ? BLACK : WHITE
         
@@ -126,7 +128,7 @@ class ChessViewController: UIViewController {
             playerTurn = playerInCheck
         }
         
-        self.boardView.updateView(before: before, after: after, inCheck: inCheck, inCheckMate: isCheckMate, player: playerInCheck, board: self.boardModel)
+        self.boardView.updateView(before: before, after: after, inCheck: moveResult.isInCheck, inCheckMate: isCheckMate, player: playerInCheck, board: self.boardModel)
         self.boardModel.printBoard()
     }
     

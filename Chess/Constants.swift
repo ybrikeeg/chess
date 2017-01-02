@@ -26,6 +26,11 @@ let NOT_FOUND = "Not Found"
 let EMPTY = "Empty"
 let GAME_OVER = "Game Over"
 
+struct MoveResult {
+    var pieceCapture: String
+    var isInCheck: Bool
+}
+
 func convertCGPointToKey(location: CGPoint) -> String
 {
     let newPoint = CGPoint(x: Int(location.x), y: Int(location.y))

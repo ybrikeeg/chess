@@ -130,11 +130,17 @@ class BoardModel: NSObject, NSCopying {
     /**
      *   Move a piece from location to location
      */
-    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false, isCastle: Int = 0) -> Bool
+    func movePiece(from: CGPoint, to: CGPoint, isSimulation: Bool = false, isCastle: Int = 0) -> MoveResult
     {
+        var result = MoveResult(pieceCapture: EMPTY, isInCheck: true)
         if let piece = getPieceAtLocation(location: from) {
             piece.location = to
             piece.isAtStartingPosition = false
+            
+            if let capture = getPieceAtLocation(location: to) {
+                result.pieceCapture = capture.type
+            }
+            
             var isCastle = isCastle
             if piece.type == KING && (to.x - from.x == 2) {
                 isCastle = KING_SIDE_CASTLE
@@ -182,10 +188,11 @@ class BoardModel: NSObject, NSCopying {
             if isSimulation {
                 player = (piece.color == BLACK) ? BLACK : WHITE
             }
-            
-            return playerIsInCheck(player: player)
+            result.isInCheck = playerIsInCheck(player: player)
+//            return playerIsInCheck(player: player)
         }
-        return true
+        return result
+//        return true
     }
     
     /**
@@ -281,7 +288,7 @@ class BoardModel: NSObject, NSCopying {
      */
     private func simulateMove(piece: PieceModel, moveTo: CGPoint) -> Bool
     {
-        var isValidMove = true
+//        var isValidMove = true
         let originalPiece = piece.copy() as! PieceModel
         let replacedPiece = getPieceAtLocation(location: moveTo)
         let originalReplace = replacedPiece?.copy() as! PieceModel
@@ -292,12 +299,16 @@ class BoardModel: NSObject, NSCopying {
             isCastle = QUEEN_SIDE_CASTLE
         }
         //move piece
-        if movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle) {
-            isValidMove = false
-        }
+        let result = movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle)
+//        isValidMove = result.isInCheck
+//        if movePiece(from: originalPiece.location, to: moveTo, isSimulation: true, isCastle: isCastle) {
+//            isValidMove = false
+//        }
         //undo move
         unmovePiece(original: originalPiece, replacement: originalReplace, isCastle: isCastle)
-        return isValidMove
+        
+        //only valid if simulated move does not put yourself in check
+        return !result.isInCheck
     }
     
     /**
