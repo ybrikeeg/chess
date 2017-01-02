@@ -26,9 +26,15 @@ let NOT_FOUND = "Not Found"
 let EMPTY = "Empty"
 let GAME_OVER = "Game Over"
 
+enum CheckType {
+    case None
+    case Check
+    case Checkmate
+}
+
 struct MoveResult {
     var pieceCapture: String
-    var isInCheck: Bool
+    var checkType: CheckType
 }
 
 func convertCGPointToKey(location: CGPoint) -> String

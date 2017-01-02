@@ -116,19 +116,18 @@ class ChessViewController: UIViewController {
     {
         let before = simplifyBoard()
         let moveResult = self.boardModel.movePiece(from: from, to: to)
-//        let inCheck = self.boardModel.movePiece(from: from, to: to)
 
         let after = simplifyBoard()
         let playerInCheck = (self.playerTurn == WHITE) ? BLACK : WHITE
         
-        let isCheckMate = self.boardModel.isCheckMate(player: playerInCheck)
-        if isCheckMate {
+//        let isCheckMate = self.boardModel.isCheckMate(player: playerInCheck)
+        if moveResult.checkType == .Checkmate {
             playerTurn = GAME_OVER
         } else {
             playerTurn = playerInCheck
         }
         
-        self.boardView.updateView(before: before, after: after, inCheck: moveResult.isInCheck, inCheckMate: isCheckMate, player: playerInCheck, board: self.boardModel)
+        self.boardView.updateView(before: before, after: after, inCheck: moveResult.checkType == .Check, inCheckMate: moveResult.checkType == .Checkmate, player: playerInCheck, board: self.boardModel)
         self.boardModel.printBoard()
     }
     
