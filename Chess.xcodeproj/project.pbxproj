@@ -18,6 +18,7 @@
 		42417E431E067BF7004DD251 /* BoardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E421E067BF7004DD251 /* BoardModel.swift */; };
 		42417E451E068AA3004DD251 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E441E068AA3004DD251 /* TileView.swift */; };
 		42417E471E0743A6004DD251 /* PieceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42417E461E0743A6004DD251 /* PieceModel.swift */; };
+		4252FA801E1B1074006349CC /* AIProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4252FA7F1E1B1074006349CC /* AIProgressView.swift */; };
 		426BFC201E1A2373005FE57C /* CaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 426BFC1F1E1A2373005FE57C /* CaptureView.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		42417E421E067BF7004DD251 /* BoardModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BoardModel.swift; sourceTree = "<group>"; };
 		42417E441E068AA3004DD251 /* TileView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TileView.swift; sourceTree = "<group>"; };
 		42417E461E0743A6004DD251 /* PieceModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PieceModel.swift; sourceTree = "<group>"; };
+		4252FA7F1E1B1074006349CC /* AIProgressView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AIProgressView.swift; sourceTree = "<group>"; };
 		426BFC1F1E1A2373005FE57C /* CaptureView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -85,6 +87,7 @@
 			children = (
 				42417E341E065AAF004DD251 /* BoardView.swift */,
 				426BFC1F1E1A2373005FE57C /* CaptureView.swift */,
+				4252FA7F1E1B1074006349CC /* AIProgressView.swift */,
 				42417E3B1E066572004DD251 /* PieceView.swift */,
 				42417E441E068AA3004DD251 /* TileView.swift */,
 			);
@@ -199,6 +202,7 @@
 				42417E211E0659D7004DD251 /* AppDelegate.swift in Sources */,
 				42417E3A1E065E1A004DD251 /* Constants.swift in Sources */,
 				42417E3E1E066729004DD251 /* ChessViewController.swift in Sources */,
+				4252FA801E1B1074006349CC /* AIProgressView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

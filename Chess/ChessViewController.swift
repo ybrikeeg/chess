@@ -17,6 +17,7 @@ class ChessViewController: UIViewController {
     var boardModelCopy = BoardModel()
     var blackCaptureCase = CaptureView()
     var whiteCaptureCase = CaptureView()
+    var progressView = AIProgressView()
     var humanCanMove = true
     
     override func viewDidLoad()
@@ -43,12 +44,16 @@ class ChessViewController: UIViewController {
     var lastTouchLocation: CGPoint? = nil
     
     var iterCount = 0
-    let DEPTH = 2
-    
+    let DEPTH = 3
+    let MAX_ITER_COUNT:Float = 10000.0
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
         iterCount += 1
-        if iterCount % 1000 == 0 { print("Iteration \(iterCount)") }
+        if iterCount % 50 == 0 {
+            DispatchQueue.main.async {
+                self.progressView.updateProgress(progress: Float(self.iterCount) / self.MAX_ITER_COUNT)
+            }
+        }
         if depth == 0 {
             return (node.getBoardScoringHeuristic(), (CGPoint.zero, CGPoint.zero))
         }
@@ -117,7 +122,10 @@ class ChessViewController: UIViewController {
                     self.movePiece(from: bestMove.1.0, to: bestMove.1.1)
                     self.humanCanMove = true
                     self.boardModelCopy = self.boardModel.copy() as! BoardModel
-
+                    
+                    DispatchQueue.main.async {
+                        self.progressView.updateProgress(progress: 0.0)
+                    }
                 } else {
                     return
                 }
@@ -214,5 +222,9 @@ class ChessViewController: UIViewController {
         self.view.addSubview(blackCaptureCase)
         whiteCaptureCase = CaptureView(frame: CGRect(x: 0, y: boardView.frame.origin.y + boardView.frame.size.height, width: width, height: captureHeight), color: WHITE)
         self.view.addSubview(whiteCaptureCase)
+        
+        let progHeight = 15
+        progressView = AIProgressView(frame: CGRect(x: 0, y: Int(Float(self.view.frame.size.height) - Float(progHeight)), width: Int(self.view.frame.size.width), height: progHeight))
+        self.view.addSubview(progressView)
     }
 }
