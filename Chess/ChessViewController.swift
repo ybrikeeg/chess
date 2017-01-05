@@ -10,7 +10,7 @@ import UIKit
 
 class ChessViewController: UIViewController {
     
-    var gamemode = GameplayMode.AIvAI
+    var gamemode = GameplayMode.HumanVAI
     
     var boardView = BoardView()
     var boardModel = BoardModel()
@@ -44,7 +44,7 @@ class ChessViewController: UIViewController {
     var lastTouchLocation: CGPoint? = nil
     
     var iterCount = 0
-    let DEPTH = 2
+    let DEPTH = 3
     let MAX_ITER_COUNT:Float = 10000.0
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
@@ -132,7 +132,6 @@ class ChessViewController: UIViewController {
                 }
                 
                 if self.gamemode == .AIvAI {
-                    print("computer make a move")
                     self.computerMove()
                 }
             }
@@ -169,10 +168,10 @@ class ChessViewController: UIViewController {
         let after = simplifyBoard()
         
         playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
-
+        let tempPlayer = playerTurn
         DispatchQueue.main.async {
             self.hapticFeedback(style: (moveResult.pieceCapture == EMPTY) ? .light : .heavy)
-            self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: self.playerTurn, board: self.boardModel)
+            self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: tempPlayer, board: self.boardModel)
             self.updateCaptureCases(moveResult: moveResult)
         }
         if moveResult.checkType == .Checkmate {
