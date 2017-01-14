@@ -36,10 +36,14 @@ class ChessViewController: UIViewController {
     {
         super.viewDidAppear(animated)
         setUpChess()
+        selectOpponentType()
     }
     
     private func setUpChess()
     {
+        playerTurn = WHITE
+        humanCanMove = true
+        lastTouchLocation = nil
         blackCaptureCase.removeFromSuperview()
         whiteCaptureCase.removeFromSuperview()
         boardView.removeFromSuperview()
@@ -48,7 +52,6 @@ class ChessViewController: UIViewController {
         boardModel = BoardModel()
         boardView.drawPieces(board: boardModel)
         boardModelCopy = boardModel.copy() as! BoardModel
-        selectOpponentType()
     }
     
     ///hi kirby!!!! you're my fave <3
@@ -91,7 +94,7 @@ class ChessViewController: UIViewController {
                 let p2 = boardModel.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
                 let moveResult = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
                 var recurse = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
-                if moveResult.0.checkType == .Draw {
+                if moveResult.checkType == .Draw {
                     recurse.0 = Float.infinity * -1.0
                 } else {
                     recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
@@ -99,7 +102,7 @@ class ChessViewController: UIViewController {
                 boardModel.unmovePiece(original: p1, replacement: p2)
  
 
-                if (bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0) && moveResult.0.checkType != .Draw {
+                if (bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0) && moveResult.checkType != .Draw {
                     bestValue = (recurse.0, move)
                 }
                 alpha = max(alpha, recurse.0)
@@ -114,7 +117,7 @@ class ChessViewController: UIViewController {
                 let moveResult = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
                 var recurse = (Float.infinity, (CGPoint.zero, CGPoint.zero))
 
-                if moveResult.1.checkType == .Draw {
+                if moveResult.checkType == .Draw {
                     recurse.0 = Float.infinity
                 } else {
                     recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
@@ -122,7 +125,7 @@ class ChessViewController: UIViewController {
                 
                 boardModel.unmovePiece(original: p1, replacement: p2)
 
-                if bestValue.0 > recurse.0 && moveResult.1.checkType != .Draw {
+                if bestValue.0 > recurse.0 && moveResult.checkType != .Draw {
                     bestValue = (recurse.0, move)
                 }
                 beta = min(beta, recurse.0)
@@ -191,13 +194,16 @@ class ChessViewController: UIViewController {
     private func selectOpponentType()
     {
         let alert = UIAlertController(title: "Chess", message: "Play my chess game", preferredStyle: UIAlertControllerStyle.alert)
-                alert.addAction(UIAlertAction(title: "Human vs AI", style: UIAlertActionStyle.default, handler: { action in
-            self.gamemode = GameplayMode.HumanVAI
+        alert.addAction(UIAlertAction(title: "Human vs AI", style: UIAlertActionStyle.default, handler: { action in
+                    self.setUpChess()
+                    self.gamemode = GameplayMode.HumanVAI
         }))
         alert.addAction(UIAlertAction(title: "Human vs Human", style: UIAlertActionStyle.default, handler: { action in
+            self.setUpChess()
             self.gamemode = GameplayMode.HumanVHuman
         }))
         alert.addAction(UIAlertAction(title: "AI vs AI", style: UIAlertActionStyle.default, handler: { action in
+            self.setUpChess()
             self.gamemode = GameplayMode.AIvAI
             self.computerMove()
         }))
@@ -208,22 +214,18 @@ class ChessViewController: UIViewController {
     {
         let before = simplifyBoard()
         let moveResult = boardModel.movePiece(from: from, to: to)
-        let result = (playerTurn == WHITE) ? moveResult.0 : moveResult.1
         let after = simplifyBoard()
         
         playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
         let tempPlayer = playerTurn
         
         DispatchQueue.main.async {
-            self.hapticFeedback(style: (result.pieceCapture == EMPTY) ? .light : .heavy)
-            self.boardView.updateView(before: before, after: after, moveResult: result, player: tempPlayer, board: self.boardModel)
-            self.updateCaptureCases(moveResult: result)
+            self.hapticFeedback(style: (moveResult.pieceCapture == EMPTY) ? .light : .heavy)
+            self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: tempPlayer, board: self.boardModel)
+            self.updateCaptureCases(moveResult: moveResult)
         }
-        if result.checkType == .Checkmate || result.checkType == .Draw {
+        if moveResult.checkType == .Checkmate || moveResult.checkType == .Draw {
             playerTurn = GAME_OVER
-            DispatchQueue.main.async {
-                self.setUpChess()
-            }
         }
         
         boardModel.printBoard()
@@ -231,6 +233,11 @@ class ChessViewController: UIViewController {
     
     func handleTap(_ gestureRecognizer: UITapGestureRecognizer)
     {
+        if playerTurn == GAME_OVER {
+            self.selectOpponentType()
+            return
+        }
+        
         if gamemode != .AIvAI {
             let touchPoint = gestureRecognizer.location(in: boardView)
             let gridLocation = boardView.tapAtLocation(tap: touchPoint)
@@ -245,7 +252,6 @@ class ChessViewController: UIViewController {
                     computerMove()
                 }
             } else {
-                print("drawing \(playerTurn)")
                 lastTouchLocation = gridLocation
                 hapticFeedback(style: .light)
                 let drawForPlayer = (gamemode == .HumanVHuman) ? playerTurn : WHITE
