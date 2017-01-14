@@ -30,6 +30,7 @@ enum CheckType {
     case None
     case Check
     case Checkmate
+    case Draw
 }
 
 struct MoveResult {

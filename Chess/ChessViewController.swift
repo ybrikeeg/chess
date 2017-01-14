@@ -26,26 +26,38 @@ class ChessViewController: UIViewController {
         self.view.backgroundColor = UIColor.lightText
         let tap = UITapGestureRecognizer(target: self, action: #selector(self.handleTap(_:)))
         self.view.addGestureRecognizer(tap)
+        
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(self.handleDoubleTap(_:)))
+        doubleTap.numberOfTapsRequired = 2
+        self.view.addGestureRecognizer(doubleTap)
     }
     
     override func viewDidAppear(_ animated: Bool)
     {
         super.viewDidAppear(animated)
-        createBoard()
-        boardView.drawPieces(board: boardModel)
-        boardModelCopy = boardModel.copy() as! BoardModel
-
-        if gamemode == .AIvAI {
-            computerMove()
-        }
+        setUpChess()
     }
     
+    private func setUpChess()
+    {
+        blackCaptureCase.removeFromSuperview()
+        whiteCaptureCase.removeFromSuperview()
+        boardView.removeFromSuperview()
+        progressView.removeFromSuperview()
+        createBoard()
+        boardModel = BoardModel()
+        boardView.drawPieces(board: boardModel)
+        boardModelCopy = boardModel.copy() as! BoardModel
+        selectOpponentType()
+    }
+    
+    ///hi kirby!!!! you're my fave <3
     var playerTurn = WHITE
     var lastTouchLocation: CGPoint? = nil
-    
     var iterCount = 0
-    let DEPTH = 3
+    let DEPTH = 2
     let MAX_ITER_COUNT:Float = 10000.0
+    
     func minimax(node: BoardModel, depth: Int, alpha: Float, beta: Float, maximizingPlayer: String) -> (Float, (CGPoint, CGPoint))
     {
         iterCount += 1
@@ -77,10 +89,17 @@ class ChessViewController: UIViewController {
             for move in allMoves {
                 let p1 = boardModel.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardModel.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
-                let recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
+                let moveResult = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
+                var recurse = (Float.infinity * -1.0, (CGPoint.zero, CGPoint.zero))
+                if moveResult.0.checkType == .Draw {
+                    recurse.0 = Float.infinity * -1.0
+                } else {
+                    recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: WHITE)
+                }
                 boardModel.unmovePiece(original: p1, replacement: p2)
-                if bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0{
+ 
+
+                if (bestValue.0 < recurse.0 || bestValue.0 == Float.infinity * -1.0) && moveResult.0.checkType != .Draw {
                     bestValue = (recurse.0, move)
                 }
                 alpha = max(alpha, recurse.0)
@@ -92,10 +111,18 @@ class ChessViewController: UIViewController {
             for move in allMoves {
                 let p1 = boardModel.getPieceAtLocation(location: move.0)!.copy() as! PieceModel
                 let p2 = boardModel.getPieceAtLocation(location: move.1)!.copy() as! PieceModel
-                _ = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
-                let recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
+                let moveResult = boardModel.movePiece(from: move.0, to: move.1, isSimulation: true)
+                var recurse = (Float.infinity, (CGPoint.zero, CGPoint.zero))
+
+                if moveResult.1.checkType == .Draw {
+                    recurse.0 = Float.infinity
+                } else {
+                    recurse = minimax(node: boardModel, depth: depth - 1, alpha: alpha, beta: beta, maximizingPlayer: BLACK)
+                }
+                
                 boardModel.unmovePiece(original: p1, replacement: p2)
-                if bestValue.0 > recurse.0 {
+
+                if bestValue.0 > recurse.0 && moveResult.1.checkType != .Draw {
                     bestValue = (recurse.0, move)
                 }
                 beta = min(beta, recurse.0)
@@ -161,22 +188,42 @@ class ChessViewController: UIViewController {
         }
     }
     
+    private func selectOpponentType()
+    {
+        let alert = UIAlertController(title: "Chess", message: "Play my chess game", preferredStyle: UIAlertControllerStyle.alert)
+                alert.addAction(UIAlertAction(title: "Human vs AI", style: UIAlertActionStyle.default, handler: { action in
+            self.gamemode = GameplayMode.HumanVAI
+        }))
+        alert.addAction(UIAlertAction(title: "Human vs Human", style: UIAlertActionStyle.default, handler: { action in
+            self.gamemode = GameplayMode.HumanVHuman
+        }))
+        alert.addAction(UIAlertAction(title: "AI vs AI", style: UIAlertActionStyle.default, handler: { action in
+            self.gamemode = GameplayMode.AIvAI
+            self.computerMove()
+        }))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
     func movePiece(from: CGPoint, to: CGPoint)
     {
         let before = simplifyBoard()
         let moveResult = boardModel.movePiece(from: from, to: to)
+        let result = (playerTurn == WHITE) ? moveResult.0 : moveResult.1
         let after = simplifyBoard()
         
         playerTurn = (playerTurn == WHITE) ? BLACK : WHITE
         let tempPlayer = playerTurn
+        
         DispatchQueue.main.async {
-            self.hapticFeedback(style: (moveResult.pieceCapture == EMPTY) ? .light : .heavy)
-            self.boardView.updateView(before: before, after: after, moveResult: moveResult, player: tempPlayer, board: self.boardModel)
-            self.updateCaptureCases(moveResult: moveResult)
+            self.hapticFeedback(style: (result.pieceCapture == EMPTY) ? .light : .heavy)
+            self.boardView.updateView(before: before, after: after, moveResult: result, player: tempPlayer, board: self.boardModel)
+            self.updateCaptureCases(moveResult: result)
         }
-        if moveResult.checkType == .Checkmate {
-            print("CHECKMATE")
+        if result.checkType == .Checkmate || result.checkType == .Draw {
             playerTurn = GAME_OVER
+            DispatchQueue.main.async {
+                self.setUpChess()
+            }
         }
         
         boardModel.printBoard()
@@ -207,6 +254,14 @@ class ChessViewController: UIViewController {
                 if !humanCanMove { lastTouchLocation = nil }
             }
         }
+    }
+    
+    /**
+     *  Restart the game on double tap
+     */
+    func handleDoubleTap(_ gestureRecognizer: UITapGestureRecognizer)
+    {
+        setUpChess()
     }
     
     private func createBoard()
